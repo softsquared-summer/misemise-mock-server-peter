@@ -16,7 +16,10 @@ ini_set('default_charset', 'utf8mb4');
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     /* ******************   MiseMise   ****************** */
     $r->addRoute('GET', '/', ['IndexController', 'index']);
-    $r->addRoute('GET', '/location_search', ['IndexController', 'location_search']); // 즐겨찾기에서 읍/면/동 검색 API
+    $r->addRoute('GET', '/locationSearch', ['IndexController', 'locationSearch']); // 즐겨찾기에서 읍/면/동 검색 API
+
+    $r->addRoute('POST', '/favorite', ['IndexController', 'favoritePost']); //  즐겨찾기 추가 API
+    $r->addRoute('DELETE', '/favorite', ['IndexController', 'favoriteDelete']); //  즐겨찾기 삭제 API
 
 });
 
