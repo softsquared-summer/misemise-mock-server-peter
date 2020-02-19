@@ -121,7 +121,154 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
             break;
 
+
+        /*
+                 * API No. 4
+                 * API Name : 즐겨찾기 해당 번호의 측정 값 조회 API
+                 * 마지막 수정 날짜 : 20.02.19
+        */
+        case "dustValue":
+            $favoriteNo = $_GET["favoriteNo"];
+            $tmp->result = getXY($favoriteNo);  // favoriteNo 를 통해 x, y 좌표 얻어옴
+            $favorite_encode = json_encode($tmp->result);
+            $favorite_decode = json_decode($favorite_encode);
+            $tm_x = $favorite_decode->tm_x;
+            $tm_y = $favorite_decode->tm_y;
+
+            $tmp->result = transFormation($tm_x, $tm_y);
+            $json_result = json_decode($tmp->result);
+
+            $x = $json_result->documents[0]->x;
+            $y = $json_result->documents[0]->y;
+
+            $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
+            $station_result = json_decode($tmp->result);
+
+            $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
+
+            $tmp->result = fineDust($stationName);
+            $json_result = json_decode($tmp->result);
+
+            $res->result->total_value = StationValue($json_result, $res->result, $station_result, khaiValue);
+            $res->result->pm10_value = StationValue($json_result, $res->result, $station_result, pm10Value);
+            $res->result->pm25_value = StationValue($json_result, $res->result, $station_result, pm25Value);
+            $res->result->no2_value = StationValue($json_result, $res->result, $station_result, no2Value);
+            $res->result->o3_value = StationValue($json_result, $res->result, $station_result, o3Value);
+            $res->result->co_value = StationValue($json_result, $res->result, $station_result, coValue);
+            $res->result->so2_value = StationValue($json_result, $res->result, $station_result, so2Value);
+
+
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "상세 미세먼지 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+            break;
+
+        /*
+                 * API No. 5
+                 * API Name : 즐겨찾기 해당 번호의 측정 등급 조회 API
+                 * 마지막 수정 날짜 : 20.02.19
+        */
+        case "dustGrade":
+            $favoriteNo = $_GET["favoriteNo"];
+            $tmp->result = getXY($favoriteNo);  // favoriteNo 를 통해 x, y 좌표 얻어옴
+            $favorite_encode = json_encode($tmp->result);
+            $favorite_decode = json_decode($favorite_encode);
+            $tm_x = $favorite_decode->tm_x;
+            $tm_y = $favorite_decode->tm_y;
+
+            $tmp->result = transFormation($tm_x, $tm_y);
+            $json_result = json_decode($tmp->result);
+
+            $x = $json_result->documents[0]->x;
+            $y = $json_result->documents[0]->y;
+
+            $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
+            $station_result = json_decode($tmp->result);
+
+            $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
+
+            $tmp->result = fineDust($stationName);
+            $json_result = json_decode($tmp->result);
+
+            $res->result->total_grade = StationGrade($json_result, $res->result, $station_result, khaiGrade);
+            $res->result->pm10_grade = StationGrade($json_result, $res->result, $station_result, pm10Grade1h);
+            $res->result->pm25_grade = StationGrade($json_result, $res->result, $station_result, pm25Grade1h);
+            $res->result->no2_grade = StationGrade($json_result, $res->result, $station_result, no2Grade);
+            $res->result->o3_grade = StationGrade($json_result, $res->result, $station_result, o3Grade);
+            $res->result->co_grade = StationGrade($json_result, $res->result, $station_result, coGrade);
+            $res->result->so2_grade = StationGrade($json_result, $res->result, $station_result, so2Grade);
+
+            if(($res->result->pm10_grade) < ($res->result->pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
+                $res->result->current_status_grade = $res->result->pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+            } else {
+                $res->result->current_status_grade = $res->result->pm10_grade;
+            }
+
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "상세 미세먼지 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+            break;
+
+        /*
+                 * API No. 6
+                 * API Name : 즐겨찾기 해당 번호의 기타 사항 조회 API
+                 * 마지막 수정 날짜 : 20.02.19
+        */
+        case "dustEtc":
+            $favoriteNo = $_GET["favoriteNo"];
+            $tmp->result = getXY($favoriteNo);  // favoriteNo 를 통해 x, y 좌표 얻어옴
+            $favorite_encode = json_encode($tmp->result);
+            $favorite_decode = json_decode($favorite_encode);
+            $tm_x = $favorite_decode->tm_x;
+            $tm_y = $favorite_decode->tm_y;
+
+            $tmp->result = transFormation($tm_x, $tm_y);
+            $json_result = json_decode($tmp->result);
+
+            $x = $json_result->documents[0]->x;
+            $y = $json_result->documents[0]->y;
+
+            $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
+            $station_result = json_decode($tmp->result);
+
+            $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
+
+            $tmp->result = fineDust($stationName);
+            $json_result = json_decode($tmp->result);
+
+            $res->result->region_2depth_name = $favorite_decode->region_2depth_name;
+            $res->result->region_3depth_name = $favorite_decode->region_3depth_name;
+
+            $now = time();
+            $five_minutes = 60*5;
+            $offset = $now % $five_minutes;
+            $five_block = $now - $offset;
+            $res->result->current_time = date("Y-m-d H:i", $five_block); //  현재시간, 5분마다 최신화
+
+            $res->result->update_time = $json_result->list[0]->dataTime;
+
+            $res->result->pm10_station = StationName($json_result, $res->result, $station_result, pm10Value);
+            $res->result->pm25_station = StationName($json_result, $res->result, $station_result, pm25Value);
+            $res->result->no2_station = StationName($json_result, $res->result, $station_result, no2Value);
+            $res->result->o3_station = StationName($json_result, $res->result, $station_result, o3Value);
+            $res->result->co_station = StationName($json_result, $res->result, $station_result, coValue);
+            $res->result->so2_station = StationName($json_result, $res->result, $station_result, so2Value);
+
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "상세 미세먼지 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+            break;
+
+
+
+
+
     }
+
+
 
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);

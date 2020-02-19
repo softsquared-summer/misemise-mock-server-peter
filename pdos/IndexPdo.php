@@ -17,13 +17,13 @@ function locationSearch($location) // 주소 검색 - KakaoAPI
     $ch = curl_init();
     curl_setopt_array($ch, $opts);
 
-
     $response = curl_exec ($ch);
 
     curl_close ($ch);
     return $response;
 
 }
+
 
 function favoritePost($region_2depth_name, $region_3depth_name, $tm_x, $tm_y)   //  즐겨찾기 추가
 {
@@ -32,6 +32,8 @@ function favoritePost($region_2depth_name, $region_3depth_name, $tm_x, $tm_y)   
     $query = "INSERT into favorites (region_2depth_name, region_3depth_name, tm_x, tm_y)  VALUES (?,?,?,?);";
     $st = $pdo->prepare($query);
     $st->execute([$region_2depth_name, $region_3depth_name, $tm_x, $tm_y]);
+
+    setAutoIncrement();
 
     $st = null;
     $pdo = null;
@@ -53,26 +55,224 @@ function favoriteDelete($favoriteNo)    //  즐겨찾기 삭제
     $query = "DELETE FROM favorites where no = ?;";
     $st = $pdo->prepare($query);
     $st->execute([$favoriteNo]);
+    $count = $st->rowCount();   //  DELETE 에 영향을 받는 rows 개수를 파악
 
-    $count = $st->rowCount();   //  DELETE 에 영향을 받는 rows 개수를 파악하여 0보다 크면 true, 그 외 false 리턴
+    setAutoIncrement();
+
     if ($count > 0) {
         return true;
     } else {
         return false;
     }
 
-    $setAutoIncrementQuery1 = "ALTER TABLE favorites AUTO_INCREMENT=1;";    //  auto_increment 변수 1로 설정
+    $st = null;
+    $pdo = null;
+}
+
+function setAutoIncrement() // auto_increment 변수 1로 설정 후 favorites 테이블 번호를 새로 부여하고 재정렬
+{
+    $pdo = pdoSqlConnect();
+    $setAutoIncrementQuery1 = "ALTER TABLE favorites AUTO_INCREMENT=1;";
     $setAutoIncrementQuery2 = "SET @COUNT = 0;";
-    $setAutoIncrementQuery3 = "UPDATE favorites SET no = @COUNT:=@COUNT+1;";    //  favorites 테이블 재정렬
+    $setAutoIncrementQuery3 = "UPDATE favorites SET no = @COUNT:=@COUNT+1;";
     $st = $pdo->prepare($setAutoIncrementQuery1);
     $st->execute();
     $st = $pdo->prepare($setAutoIncrementQuery2);
     $st->execute();
     $st = $pdo->prepare($setAutoIncrementQuery3);
     $st->execute();
-    $st = $pdo->prepare($setAutoIncrementQuery1);   //  추후에 추가될 즐겨찾기를 위해서 auto_increment 변수 1로 설정
+    $st = $pdo->prepare($setAutoIncrementQuery1);
     $st->execute();
+}
+
+
+function transFormation($tm_x, $tm_y)   //  좌표계 WGS84 를 TM 으로 변환
+{
+    //https://dapi.kakao.com/v2/local/geo/transcoord.json?x=160710.37729270622&y=-4388.879299157299&input_coord=WTM&output_coord=WGS84
+    $path = "/v2/local/geo/transcoord.json";
+    $api_server = 'https://dapi.kakao.com';
+    $coord = "&input_coord=WGS84&output_coord=TM";
+    $headers = array('Authorization: KakaoAK 0ffbef86df8174ccb10697480464f8dc');
+
+    $opts = array(CURLOPT_URL => $api_server.$path."?x=".$tm_x."&y=".$tm_y.$coord,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPGET => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => 0,
+        CURLOPT_SSLVERSION => true,
+        CURLOPT_HEADER => false,
+        CURLOPT_HTTPHEADER => $headers);
+    $ch = curl_init();
+    curl_setopt_array($ch, $opts);
+
+
+    $response = curl_exec ($ch);
+
+    curl_close ($ch);
+    return $response;
+}
+
+function findNearStation($tm_x, $tm_y)  //  가까운 측정소 3개 검색
+{
+    //http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?tmX=210895.593623738&tmY=411629.47873038985&ServiceKey=5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D&_returnType=json
+    $api_server = 'http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList';
+    $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
+    $type = "&_returnType=json";
+
+    $opts = array(CURLOPT_URL => $api_server."?tmX=".$tm_x."&tmY=".$tm_y."&ServiceKey=".$key.$type,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPGET => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => 0,
+        CURLOPT_SSLVERSION => true,
+        CURLOPT_HEADER => false);
+
+    $ch = curl_init();
+    curl_setopt_array($ch, $opts);
+
+
+    $response = curl_exec ($ch);
+
+    curl_close ($ch);
+    return $response;
+}
+
+function fineDust($stationName) //  측정소 이름으로 검색하여 상세 조회
+{
+    $api_server = 'http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty';
+    $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
+    $term = "month";
+    $ver = "1.3";
+    $type = "&_returnType=json";
+
+    $opts = array(CURLOPT_URL => $api_server."?stationName=".$stationName."&dataTerm=".$term."&ServiceKey=".$key."&ver=".$ver.$type,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPGET => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => 0,
+        CURLOPT_SSLVERSION => true,
+        CURLOPT_HEADER => false);
+
+    $ch = curl_init();
+    curl_setopt_array($ch, $opts);
+
+
+    $response = curl_exec ($ch);
+
+    curl_close ($ch);
+    return $response;
+}
+
+function getXY($favoriteNo) //  즐겨찾기 번호의 x, y 좌표 반환
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT no,
+       region_2depth_name,
+       region_3depth_name,
+       tm_x,
+       tm_y
+FROM favorites
+where no = ?;";
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$favoriteNo]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
 
     $st = null;
     $pdo = null;
+
+    return $res[0];
+}
+
+function StationValue($json_result, $res, $station_result, $target){    //  target의 value 반환
+    $Checking = "점검중";
+    if(($json_result->list[0]->$target) != '-'){
+        return $json_result->list[0]->$target;
+    } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+        $nextStationName = $station_result->list[1]->stationName;
+        $nextResult = fineDust($nextStationName);
+        $next_result = json_decode($nextResult);
+        if(($next_result->list[0]->$target) != '-'){
+            return $next_result->list[0]->$target;
+        } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+            $nextStationName = $station_result->list[2]->stationName;
+            $nextResult2 = fineDust($nextStationName);
+            $next_result2 = json_decode($nextResult2);
+            if(($next_result2->list[0]->$target) != '-'){
+                return $next_result2->list[0]->$target;
+            } else {
+                $res->result->pm10Value = $Checking;
+            }
+        }
+    }
+}
+
+function StationGrade($json_result, $res, $station_result, $target){    //  target의 grade 반환
+    $Checking = "점검중";
+    if(($json_result->list[0]->$target) != ''){
+        return $json_result->list[0]->$target;
+    } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+        $nextStationName = $station_result->list[1]->stationName;
+        $nextResult = fineDust($nextStationName);
+        $next_result = json_decode($nextResult);
+        if(($next_result->list[0]->$target) != ''){
+            return $next_result->list[0]->$target;
+        } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+            $nextStationName = $station_result->list[2]->stationName;
+            $nextResult2 = fineDust($nextStationName);
+            $next_result2 = json_decode($nextResult2);
+            if(($next_result2->list[0]->$target) != ''){
+                return $next_result2->list[0]->$target;
+            } else {
+                $res->result->pm10Value = $Checking;
+            }
+        }
+    }
+}
+
+function StationName($json_result, $res, $station_result, $target){ //  target의 station name 반환
+    $Checking = "점검중";
+    if(($json_result->list[0]->$target) != '-'){
+        return $station_result->list[0]->stationName;
+    } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+        $nextStationName = $station_result->list[1]->stationName;
+        $nextResult = fineDust($nextStationName);
+        $next_result = json_decode($nextResult);
+        if(($next_result->list[0]->$target) != '-'){
+            return $station_result->list[1]->stationName;
+        } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+            $nextStationName = $station_result->list[2]->stationName;
+            $nextResult2 = fineDust($nextStationName);
+            $next_result2 = json_decode($nextResult2);
+            if(($next_result2->list[0]->$target) != '-'){
+                return $station_result->list[2]->stationName;
+            } else {
+                $res->result->pm10Value = $Checking;
+            }
+        }
+    }
+}
+
+function StationMang($json_result, $res, $station_result, $target){ //  target의 station mang name 반환
+    $Checking = "점검중";
+    if(($json_result->list[0]->$target) != '-' && ($json_result->list[0]->mangName) != ''){
+        return $json_result->list[0]->mangName;
+    } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+        $nextStationName = $station_result->list[1]->stationName;
+        $nextResult = fineDust($nextStationName);
+        $next_result = json_decode($nextResult);
+        if(($next_result->list[0]->$target) != '-' && ($next_result->list[0]->mangName) != ''){
+            return $next_result->list[0]->mangName;
+        } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+            $nextStationName = $station_result->list[2]->stationName;
+            $nextResult2 = fineDust($nextStationName);
+            $next_result2 = json_decode($nextResult2);
+            if(($next_result2->list[0]->$target) != '-' && ($next_result2->list[0]->mangName) != ''){
+                return $next_result2->list[0]->mangName;
+            } else {
+                $res->result->pm10Value = $Checking;
+            }
+        }
+    }
 }
