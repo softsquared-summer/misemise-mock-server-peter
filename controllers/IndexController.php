@@ -164,7 +164,7 @@ try {
                 $res->message = "측정 값 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
                 break;
-            } else {    //  GPS의 x, y 값을 받을 경우
+            } else if ($_GET["x"] && $_GET["y"]){    //  GPS의 x, y 값을 받을 경우
                 $tm_x = $_GET["x"];
                 $tm_y = $_GET["y"];
 
@@ -245,7 +245,7 @@ try {
                 $res->message = "측정 등급 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
                 break;
-            } else {    //  GPS의 x, y 값을 받을 경우
+            } else if ($_GET["x"] && $_GET["y"]) {    //  GPS의 x, y 값을 받을 경우
                 $tm_x = $_GET["x"];
                 $tm_y = $_GET["y"];
 
@@ -337,7 +337,7 @@ try {
                 $res->message = "기타 사항 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
                 break;
-            } else {    //  GPS의 x, y 값을 받을 경우
+            } else if ($_GET["x"] && $_GET["y"]) {    //  GPS의 x, y 값을 받을 경우
                 $tm_x = $_GET["x"];
                 $tm_y = $_GET["y"];
 
@@ -389,20 +389,14 @@ try {
                  * 마지막 수정 날짜 : 20.02.20
         */
         case "favoriteGet":
-            $tmp->result = favoriteGet();
-            $favorite_encode = json_encode($tmp->result);
-            $favorite_decode = json_decode($favorite_encode);
-            $cnt = count($favorite_decode); //  즐겨찾기 개수
+            if ($_GET["x"] && $_GET["y"]){
+                $x = $_GET["x"];
+                $y = $_GET["y"];
+                $res->result[0]["no"] = 1;
+                $res->result[0]["region_2depth_name"] = "GPS";
+                $res->result[0]["region_3depth_name"] = "현재 위치";
 
-            for($i=0; $i<$cnt; $i++){
-                $res->result[$i]["no"] = $favorite_decode[$i]->no;
-                $res->result[$i]["region_2depth_name"] = $favorite_decode[$i]->region_2depth_name;
-                $res->result[$i]["region_3depth_name"] = $favorite_decode[$i]->region_3depth_name;
-
-                $tm_x = $favorite_decode[$i]->tm_x;
-                $tm_y = $favorite_decode[$i]->tm_y;
-
-                $tmp->result = transFormation($tm_x, $tm_y);
+                $tmp->result = transFormation($x, $y);
                 $json_result = json_decode($tmp->result);
 
                 $x = $json_result->documents[0]->x;
@@ -419,19 +413,93 @@ try {
                 $pm10_grade = StationGrade($json_result, $res->result, $station_result, pm10Grade1h);
                 $pm25_grade = StationGrade($json_result, $res->result, $station_result, pm25Grade1h);
 
-
                 if((pm10_grade) < (pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                    $res->result[$i]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                    $res->result[0]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
                 } else {
-                    $res->result[$i]["current_status_grade"]->current_status_grade = $pm10_grade;
+                    $res->result[0]["current_status_grade"] = $pm10_grade;
+                }
+
+                $tmp->result = favoriteGet();
+                $favorite_encode = json_encode($tmp->result);
+                $favorite_decode = json_decode($favorite_encode);
+                $cnt = count($favorite_decode);
+
+                for($i=0; $i<$cnt; $i++){
+                    $res->result[$i+1]["no"] = $favorite_decode[$i]->no+1;
+                    $res->result[$i+1]["region_2depth_name"] = $favorite_decode[$i]->region_2depth_name;
+                    $res->result[$i+1]["region_3depth_name"] = $favorite_decode[$i]->region_3depth_name;
+
+                    $tm_x = $favorite_decode[$i]->tm_x;
+                    $tm_y = $favorite_decode[$i]->tm_y;
+
+                    $tmp->result = transFormation($tm_x, $tm_y);
+                    $json_result = json_decode($tmp->result);
+
+                    $x = $json_result->documents[0]->x;
+                    $y = $json_result->documents[0]->y;
+
+                    $tmp->result = findNearStation($x, $y);
+                    $station_result = json_decode($tmp->result);
+
+                    $stationName = $station_result->list[0]->stationName;
+
+                    $tmp->result = fineDust($stationName);
+                    $json_result = json_decode($tmp->result);
+
+                    $pm10_grade = StationGrade($json_result, $res->result, $station_result, pm10Grade1h);
+                    $pm25_grade = StationGrade($json_result, $res->result, $station_result, pm25Grade1h);
+
+                    if((pm10_grade) < (pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
+                        $res->result[$i+1]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                    } else {
+                        $res->result[$i+1]["current_status_grade"] = $pm10_grade;
+                    }
+                }
+            } else {
+                $tmp->result = favoriteGet();
+                $favorite_encode = json_encode($tmp->result);
+                $favorite_decode = json_decode($favorite_encode);
+                $cnt = count($favorite_decode);
+
+                for($i=0; $i<$cnt; $i++){
+                    $res->result[$i]["no"] = $favorite_decode[$i]->no;
+                    $res->result[$i]["region_2depth_name"] = $favorite_decode[$i]->region_2depth_name;
+                    $res->result[$i]["region_3depth_name"] = $favorite_decode[$i]->region_3depth_name;
+
+                    $tm_x = $favorite_decode[$i]->tm_x;
+                    $tm_y = $favorite_decode[$i]->tm_y;
+
+                    $tmp->result = transFormation($tm_x, $tm_y);
+                    $json_result = json_decode($tmp->result);
+
+                    $x = $json_result->documents[0]->x;
+                    $y = $json_result->documents[0]->y;
+
+                    $tmp->result = findNearStation($x, $y);
+                    $station_result = json_decode($tmp->result);
+
+                    $stationName = $station_result->list[0]->stationName;
+
+                    $tmp->result = fineDust($stationName);
+                    $json_result = json_decode($tmp->result);
+
+                    $pm10_grade = StationGrade($json_result, $res->result, $station_result, pm10Grade1h);
+                    $pm25_grade = StationGrade($json_result, $res->result, $station_result, pm25Grade1h);
+
+                    if((pm10_grade) < (pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
+                        $res->result[$i]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                    } else {
+                        $res->result[$i]["current_status_grade"] = $pm10_grade;
+                    }
                 }
             }
+
             $res->isSuccess = TRUE;
             $res->code = 100;
-            $res->message = "즐겨찾기 조회 성공";
+            $res->message = "즐겨찾기에 추가 성공";
+
             echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
             break;
-
 
     }
 
