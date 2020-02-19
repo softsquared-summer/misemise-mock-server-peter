@@ -24,6 +24,26 @@ function locationSearch($location) // 주소 검색 - KakaoAPI
 
 }
 
+function favoriteGet()  //  즐겨찾기 조회
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT no,
+       region_2depth_name,
+       region_3depth_name,
+       tm_x,
+       tm_y
+FROM favorites;";
+
+    $st = $pdo->prepare($query);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
 
 function favoritePost($region_2depth_name, $region_3depth_name, $tm_x, $tm_y)   //  즐겨찾기 추가
 {
