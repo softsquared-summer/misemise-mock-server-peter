@@ -112,6 +112,29 @@ function transFormation($tm_x, $tm_y)   //  좌표계 WGS84 를 TM 으로 변환
     return $response;
 }
 
+function FindLocation($tm_x, $tm_y) //  x,y 값을 행정구역정보로 변환
+{
+    $path = "/v2/local/geo/coord2regioncode.json";
+    $api_server = 'https://dapi.kakao.com';
+    $headers = array('Authorization: KakaoAK 0ffbef86df8174ccb10697480464f8dc');
+
+    $opts = array(CURLOPT_URL => $api_server.$path."?x=".$tm_x."&y=".$tm_y,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPGET => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => 0,
+        CURLOPT_SSLVERSION => true,
+        CURLOPT_HEADER => false,
+        CURLOPT_HTTPHEADER => $headers);
+    $ch = curl_init();
+    curl_setopt_array($ch, $opts);
+
+    $response = curl_exec ($ch);
+
+    curl_close ($ch);
+    return $response;
+}
+
 function findNearStation($tm_x, $tm_y)  //  가까운 측정소 3개 검색
 {
     //http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?tmX=210895.593623738&tmY=411629.47873038985&ServiceKey=5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D&_returnType=json

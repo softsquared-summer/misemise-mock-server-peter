@@ -21,9 +21,10 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('POST', '/favorite', ['IndexController', 'favoritePost']); //  즐겨찾기 추가 API
     $r->addRoute('DELETE', '/favorite', ['IndexController', 'favoriteDelete']); //  즐겨찾기 삭제 API
 
-    $r->addRoute('GET', '/dust/value', ['IndexController', 'dustValue']); //    즐겨찾기 해당 번호의 측정 값 조회 API
-    $r->addRoute('GET', '/dust/grade', ['IndexController', 'dustGrade']); //    즐겨찾기 해당 번호의 측정 등급 조회 API
-    $r->addRoute('GET', '/dust/etc', ['IndexController', 'dustEtc']); //    즐겨찾기 해당 번호의 기타 사항 조회 API
+    $r->addRoute('GET', '/dust/value', ['IndexController', 'dustValue']); //    즐겨찾기 해당 번호 or GPS의 x, y 기준으로 측정 값 조회 API
+    $r->addRoute('GET', '/dust/grade', ['IndexController', 'dustGrade']); //    즐겨찾기 해당 번호 or GPS의 x, y 기준으로 측정 등급 조회 API
+    $r->addRoute('GET', '/dust/etc', ['IndexController', 'dustEtc']); //    즐겨찾기 해당 번호 or GPS의 x, y 기준으로 기타 사항 조회 API
+
 });
 
 // Fetch method and URI from somewhere
