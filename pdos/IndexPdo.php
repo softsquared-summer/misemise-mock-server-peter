@@ -228,30 +228,30 @@ where no = ?;";
     return $res[0];
 }
 
-function StationValue($json_result, $res, $station_result, $target){    //  target의 value 반환
+function StationValue($json_result, $station_result, $target){
     $Checking = "점검중";
-    if(($json_result->list[0]->$target) != '-'){
+    if(($json_result->list[0]->$target) != '-' && ($json_result->list[0]->$target) != ''){
         return $json_result->list[0]->$target;
     } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
         $nextStationName = $station_result->list[1]->stationName;
         $nextResult = fineDust($nextStationName);
         $next_result = json_decode($nextResult);
-        if(($next_result->list[0]->$target) != '-'){
+        if(($next_result->list[0]->$target) != '-' && ($json_result->list[0]->$target) != ''){
             return $next_result->list[0]->$target;
         } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
             $nextStationName = $station_result->list[2]->stationName;
             $nextResult2 = fineDust($nextStationName);
             $next_result2 = json_decode($nextResult2);
-            if(($next_result2->list[0]->$target) != '-'){
+            if(($next_result2->list[0]->$target) != '-' & ($json_result->list[0]->$target) != ''){
                 return $next_result2->list[0]->$target;
             } else {
-                $res->result->pm10Value = $Checking;
+                return $Checking;
             }
         }
     }
 }
 
-function StationGrade($json_result, $res, $station_result, $target){    //  target의 grade 반환
+function StationGrade($json_result, $station_result, $target){    //  target의 grade 반환
     $Checking = "점검중";
     if(($json_result->list[0]->$target) != ''){
         return $json_result->list[0]->$target;
@@ -268,13 +268,13 @@ function StationGrade($json_result, $res, $station_result, $target){    //  targ
             if(($next_result2->list[0]->$target) != ''){
                 return $next_result2->list[0]->$target;
             } else {
-                $res->result->pm10Value = $Checking;
+                return $Checking;
             }
         }
     }
 }
 
-function StationName($json_result, $res, $station_result, $target){ //  target의 station name 반환
+function StationName($json_result, $station_result, $target){ //  target의 station name 반환
     $Checking = "점검중";
     if(($json_result->list[0]->$target) != '-'){
         return $station_result->list[0]->stationName;
@@ -291,13 +291,13 @@ function StationName($json_result, $res, $station_result, $target){ //  target�
             if(($next_result2->list[0]->$target) != '-'){
                 return $station_result->list[2]->stationName;
             } else {
-                $res->result->pm10Value = $Checking;
+                return $Checking;
             }
         }
     }
 }
 
-function StationMang($json_result, $res, $station_result, $target){ //  target의 station mang name 반환
+function StationMang($json_result, $station_result, $target){ //  target의 station mang name 반환
     $Checking = "점검중";
     if(($json_result->list[0]->$target) != '-' && ($json_result->list[0]->mangName) != ''){
         return $json_result->list[0]->mangName;
@@ -314,7 +314,7 @@ function StationMang($json_result, $res, $station_result, $target){ //  target�
             if(($next_result2->list[0]->$target) != '-' && ($next_result2->list[0]->mangName) != ''){
                 return $next_result2->list[0]->mangName;
             } else {
-                $res->result->pm10Value = $Checking;
+                return $Checking;
             }
         }
     }
