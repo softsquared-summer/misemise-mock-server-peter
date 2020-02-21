@@ -512,6 +512,52 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
             break;
 
+        /*
+                 * API No. 8
+                 * API Name : 모든 측정소 미세먼지, 초미세먼지, 현재 등급 조회 API (지도)
+                 * 마지막 수정 날짜 : 20.02.21
+        */
+        case "map":
+            http_response_code(200);
+            $all_station = map();
+            $map_encode = json_encode($all_station);
+            $map_decode = json_decode($map_encode);
+
+            for($i=0; $i<count($map_decode); $i++){
+
+                $tm_x = $map_decode[$i]->x;
+                $tm_y = $map_decode[$i]->y;
+                $stationName = $map_decode[$i]->station_name;
+
+                $tmp->result = transFormation($tm_x, $tm_y);
+                $json_result = json_decode($tmp->result);
+                $x = $json_result->documents[0]->x;
+                $y = $json_result->documents[0]->y;
+
+                $tmp->result = fineDust($stationName);
+                $json_result = json_decode($tmp->result);
+
+                $pm10_value = MapValue($json_result, pm10Value);
+                $pm25_value = MapValue($json_result, pm25Value);
+                $pm10_grade = MapValue($json_result, pm10Grade1h);
+                $pm25_grade = MapValue($json_result, pm25Grade1h);
+
+                $res->result[$i]["no"] = $map_decode[$i]->no;
+                $res->result[$i]["station_name"] = $map_decode[$i]->station_name;
+                $res->result[$i]["pm10_value"] = $pm10_value;
+                $res->result[$i]["pm25_value"] = $pm25_value;
+                if((pm10_grade) < (pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
+                    $res->result[$i]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                } else {
+                    $res->result[$i]["current_status_grade"] = $pm10_grade;
+                }
+            }
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "테스트 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
     }
 
 

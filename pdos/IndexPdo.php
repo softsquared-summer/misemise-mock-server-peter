@@ -319,3 +319,33 @@ function StationMang($json_result, $station_result, $target){ //  target의 stat
         }
     }
 }
+
+function map()  //  데이터베이스에서 모든 측정소의 정보를 가져옴
+{
+    $pdo = pdoSqlConnect();
+    $query = "Select no,
+                    station_name,
+                    x,
+                    y
+            from station;";
+    $st = $pdo->prepare($query);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+
+function MapValue($json_result, $target)    //  측정소의 미세먼지, 초미세먼지, 등급을 반환
+{
+    $Checking = "점검중";
+    if (($json_result->list[0]->$target) != '-' && ($json_result->list[0]->$target) != '') {
+        return $json_result->list[0]->$target;
+    } else {    //  '-' 또는 ' ' 일 경우 점검중
+        return $Checking;
+    }
+}
