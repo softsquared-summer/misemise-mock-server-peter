@@ -27,6 +27,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/dust/etc', ['IndexController', 'dustEtc']);   //    즐겨찾기 해당 동네 이름 or GPS의 x, y 기준으로 기타 사항 조회 API
 
     $r->addRoute('GET', '/map', ['IndexController', 'map']);    //  모든 측정소 미세먼지, 초미세먼지, 현재 등급 조회 API (지도)
+    $r->addRoute('GET', '/map/{mapNo}', ['IndexController', 'mapDetail']);  //  해당 측정소 미세먼지, 초미세먼지, 현재 등급 조회 API (지도)
 });
 
 // Fetch method and URI from somewhere

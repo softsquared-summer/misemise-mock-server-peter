@@ -349,3 +349,25 @@ function MapValue($json_result, $target)    //  측정소의 미세먼지, 초�
         return $Checking;
     }
 }
+
+function mapDetail($mapNo)
+{
+    $pdo = pdoSqlConnect();
+    $query = "Select no,
+                    station_name,
+                    x,
+                    y
+            from station
+            where no = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$mapNo]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+}
