@@ -1,12 +1,12 @@
 <?php
 /* ******************   MiseMise   ****************** */
-function locationSearch($location) // 주소 검색 - KakaoAPI
+function locationSearch($location, $page) // 주소 검색 - KakaoAPI
 {
     $path = "/v2/local/search/address.json";
     $api_server = 'https://dapi.kakao.com';
     $headers = array('Authorization: KakaoAK 0ffbef86df8174ccb10697480464f8dc ');
     $max_size = 30; // 카카오 API 주소 검색 최대치 : 30
-    $opts = array(CURLOPT_URL => $api_server.$path."?query=".urlencode($location)."&size=".$max_size,
+    $opts = array(CURLOPT_URL => $api_server.$path."?query=".urlencode($location)."&page=".$page."&size=".$max_size,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPGET => true,
         CURLOPT_SSL_VERIFYPEER => false,

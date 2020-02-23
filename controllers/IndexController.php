@@ -27,17 +27,18 @@ try {
         /*
                  * API No. 1
                  * API Name : 즐겨찾기 하기 위해서 읍/면/동 검색 API
-                 * 마지막 수정 날짜 : 20.02.17
+                 * 마지막 수정 날짜 : 20.02.23
         */
         case "locationSearch":
             http_response_code(200);
 
             $location = $_GET["location"];
+            $pageNo = $_GET["pageNo"];
 
             if(!empty($location)){  //  검색어를 입력한 경우
                 $tmp->result = locationSearch($location);
                 $json_result = json_decode($tmp->result);
-
+                $total_page = $json_result->meta->total_count;
                 $documents = $json_result->documents;
                 $len = count($documents);
 
@@ -64,6 +65,7 @@ try {
                         $res->result[$i]["tm_x"] = $json_result->documents[$i]->x;
                         $res->result[$i]["tm_y"] = $json_result->documents[$i]->y;
                     }
+                    $res->totalPageNo = ceil($total_page/30);
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "읍/면/동 주소 검색 성공";
@@ -232,9 +234,11 @@ try {
                 $tmp->result = fineDust($stationName);
                 $json_result = json_decode($tmp->result);
 
-                $res->result->total_grade = StationGrade($json_result,  $station_result, khaiGrade);
                 (int)$pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
                 (int)$pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
+                $res->result->total_grade = StationGrade($json_result,  $station_result, khaiGrade);
+                $res->result->pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+                $res->result->pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
                 $res->result->no2_grade = StationGrade($json_result,  $station_result, no2Grade);
                 $res->result->o3_grade = StationGrade($json_result,  $station_result, o3Grade);
                 $res->result->co_grade = StationGrade($json_result,  $station_result, coGrade);
@@ -270,10 +274,11 @@ try {
                 $tmp->result = fineDust($stationName);
                 $json_result = json_decode($tmp->result);
 
-
-                $res->result->total_grade = StationGrade($json_result, $station_result, khaiGrade);
                 (int)$pm10_grade = StationGrade($json_result, $station_result, pm10Grade1h);
                 (int)$pm25_grade = StationGrade($json_result, $station_result, pm25Grade1h);
+                $res->result->total_grade = StationGrade($json_result, $station_result, khaiGrade);
+                $res->result->pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+                $res->result->pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
                 $res->result->no2_grade = StationGrade($json_result,  $station_result, no2Grade);
                 $res->result->o3_grade = StationGrade($json_result,  $station_result, o3Grade);
                 $res->result->co_grade = StationGrade($json_result,  $station_result, coGrade);
@@ -547,8 +552,8 @@ try {
 
                 $res->result[$i]["no"] = $map_decode[$i]->no;
                 $res->result[$i]["station_name"] = $map_decode[$i]->station_name;
-                $res->result[$i]["pm10_value"] = $pm10_value;
-                $res->result[$i]["pm25_value"] = $pm25_value;
+                $res->result[$i]["pm10_value"] = MapValue($json_result, pm10Grade1h);
+                $res->result[$i]["pm25_value"] = MapValue($json_result, pm25Grade1h);
                 if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
                     $res->result[$i]["current_status_grade"] = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
                 } else {
@@ -591,8 +596,8 @@ try {
 
             $res->result["no"] = $map_decode->no;
             $res->result["station_name"] = $stationName;
-            $res->result["pm10_value"] = $pm10_value;
-            $res->result["pm25_value"] = $pm25_value;
+            $res->result["pm10_value"] = MapValue($json_result, pm10Grade1h);
+            $res->result["pm25_value"] = MapValue($json_result, pm25Grade1h);
             if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
                 $res->result["current_status_grade"] = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
             } else {
