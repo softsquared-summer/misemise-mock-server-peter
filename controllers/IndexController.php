@@ -663,6 +663,23 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
+        /*
+                 * API No. 12
+                 * API Name : 일본기상청 영상 조회 API
+                 * 마지막 수정 날짜 : 20.02.24
+        */
+        case "japanMeteorologicalAgency":   //  반환된 imgUrl 을 가공해서 보여줘야 함
+            http_response_code(200);
+
+            for($i=24; $i<70; $i+=3){ // 영상이 img 파일로 연속, imgUrl을 반환
+                $res->result[] = 'https://static.tenki.jp/static-images/pm25/'. $i. '/japan-detail/large.jpg';
+            }
+
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "일본기상청 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
 
     }
 

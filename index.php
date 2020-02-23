@@ -32,6 +32,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/notice', ['IndexController', 'notice']);  //  공지사항 조회 API (팝업)
 
     $r->addRoute('GET', '/anyangUniversity', ['IndexController', 'anyangUniversity']);  //  안양대연구소 영상 조회 API
+    $r->addRoute('GET', '/japanMeteorologicalAgency', ['IndexController', 'japanMeteorologicalAgency']);    //  일본기상청 영상 조회 API
+
 });
 
 // Fetch method and URI from somewhere
