@@ -610,6 +610,20 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
+        /*
+                 * API No. 10
+                 * API Name : 공지사항 조회 API (팝업)
+                 * 마지막 수정 날짜 : 20.02.24
+        */
+        case "notice":
+            http_response_code(200);
+            $res->result = notice();
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "테스트 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
     }
 
 

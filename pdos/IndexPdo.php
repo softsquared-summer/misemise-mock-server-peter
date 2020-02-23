@@ -371,3 +371,26 @@ function mapDetail($mapNo)
 
     return $res[0];
 }
+
+function notice()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select no,
+                title,
+                concat('Ver ', version) as version,
+                content
+            from notices
+            order by created_at DESC
+            LIMIT 1;";
+
+    $st = $pdo->prepare($query);
+
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+}
