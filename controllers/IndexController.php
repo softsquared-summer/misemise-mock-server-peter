@@ -624,6 +624,46 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
+        /*
+                 * API No. 11
+                 * API Name : 안양대연구소 영상 조회 API
+                 * 마지막 수정 날짜 : 20.02.24
+        */
+        case "anyangUniversity":
+            http_response_code(200);
+
+            $area = $_GET["area"];
+
+            $KoreanPeninsulaPm10 = 'http://www.webairwatch.com/kaq/modelimg_case4/PM10.09KM.Animation.gif';
+            $KoreanPeninsulaPm2_5 = 'http://www.webairwatch.com/kaq/modelimg_case4/PM2_5.09KM.Animation.gif';
+
+            $EastAsiaPm10 = 'http://www.webairwatch.com/kaq/modelimg_case4/PM10.27KM.Animation.gif';
+            $EastAsiaPm2_5 = 'http://www.webairwatch.com/kaq/modelimg_case4/PM2_5.27KM.Animation.gif';
+
+            if($area == 1 || $area == ''){
+                $res->result->KoreaPeninsulaPm10 = $KoreanPeninsulaPm10;
+                $res->result->KoreaPeninsulaPm2_5 = $KoreanPeninsulaPm2_5;
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "안양대연구소 한반도 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            } else if ($area == 2){
+                $res->result->EastAsiaPm10 = $EastAsiaPm10;
+                $res->result->EastAsiaPm2_5 = $EastAsiaPm2_5;
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "안양대연구소 동아시아 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            } else {
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "안양대연구소 조회 실패";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
     }
 
 

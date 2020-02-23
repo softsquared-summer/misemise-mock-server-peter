@@ -30,6 +30,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/map/{mapNo}', ['IndexController', 'mapDetail']);  //  해당 측정소 미세먼지, 초미세먼지, 현재 등급 조회 API (지도)
 
     $r->addRoute('GET', '/notice', ['IndexController', 'notice']);  //  공지사항 조회 API (팝업)
+
+    $r->addRoute('GET', '/anyangUniversity', ['IndexController', 'anyangUniversity']);  //  안양대연구소 영상 조회 API
 });
 
 // Fetch method and URI from somewhere
