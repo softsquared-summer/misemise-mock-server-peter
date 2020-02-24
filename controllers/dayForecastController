@@ -1,0 +1,17 @@
+!#/etc/php/7.0/fpm -q
+
+<?php
+include "/var/www/html/api-server/pdos/DatabasePdo.php";
+
+// UPDATE
+$pdo = pdoSqlConnect();
+for($i=1; $i<=21; $i++){
+    $randomNum = mt_rand(1,4);
+    $query = "update day_forecast set current_grade=$randomNum where no = $i;";
+    $st = $pdo->prepare($query);
+    $st->execute([]);
+}
+$st = null;
+$pdo = null;
+
+?>
