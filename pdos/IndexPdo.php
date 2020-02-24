@@ -372,7 +372,7 @@ function mapDetail($mapNo)
     return $res[0];
 }
 
-function notice()
+function notice()   //  공지사항 반환
 {
     $pdo = pdoSqlConnect();
     $query = "select no,
@@ -392,5 +392,40 @@ function notice()
     $st = null;
     $pdo = null;
 
+    return $res[0];
+}
+
+function hourForecast($hourNo)  //  현재시간 +12 시간까지의 정보 반환
+{
+    $pdo = pdoSqlConnect();
+
+    $query = "select no,
+       case when HOUR(hour) = 0
+           then concat('오전12시')
+           when HOUR(hour) < 12
+           then concat('오전', HOUR(hour), '시')
+           when HOUR(hour) = 12
+           then concat('오후12시')
+           else concat('오후', HOUR(hour)-12, '시')
+           end as hour,
+       case when current_grade = 1
+           then '좋음'
+           when current_grade = 2
+           then '보통'
+           when current_grade = 3
+           then '나쁨'
+           else '매우나쁨'
+           end as current_grade
+from hour_forecast
+where no = $hourNo";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
     return $res[0];
 }

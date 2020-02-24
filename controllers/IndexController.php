@@ -663,6 +663,7 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
+            
         /*
                  * API No. 12
                  * API Name : 일본기상청 영상 조회 API
@@ -680,7 +681,42 @@ try {
             $res->message = "일본기상청 조회 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
+            
+        /*
+                 * API No. 13
+                 * API Name : 시간별 예보 조회 API
+                 * 마지막 수정 날짜 : 20.02.24
+        */
+        case "hourForecast":
+            http_response_code(200);
+            date_default_timezone_set('Asia/Seoul');
 
+            $timestamp = strtotime("Now");
+            $now = date("H", $timestamp);
+            $end_time = $now+13;
+            $max_size = 24;
+            if($end_time > 23){ //  하루가 넘어가서 오전12시 부터 다시 보여야 하는 경우
+                $re_time = $end_time-23;
+                $i=1;
+                for($j=$now+2; $j<$max_size; $j++){
+                    $res->result[] = hourForecast($j);
+                    $i++;
+                }
+                for($j=1; $j<$re_time; $j++){
+                    $res->result[] = hourForecast($j);
+                }
+            } else {
+                for($i=$now+2; $i<$end_time; $i++){
+                    $res->result[] = hourForecast($i);
+                }
+            }
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "테스트 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+            
+            
     }
 
 
