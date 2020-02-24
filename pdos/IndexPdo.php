@@ -417,11 +417,76 @@ function hourForecast($hourNo)  //  현재시간 +12 시간까지의 정보 반�
            else '매우나쁨'
            end as current_grade
 from hour_forecast
-where no = $hourNo";
+where no = $hourNo;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+    return $res[0];
+}
+
+function timeDistance($now, $yoil)  //  현재 시간과 요일을 활용해서 아침, 점심, 저녁 어디에 더 가까운지 찾기
+{
+    $pdo = pdoSqlConnect();
+
+    $query = "select day_forecast.no,
+       day,
+       day_forecast.time,
+       day_forecast.current_status_grade,
+       ABS(?-HOUR(time)) as distance
+from days
+right outer join (select day_forecast.no, day_no,time, current_status_grade from day_forecast) day_forecast
+    on days.no = day_forecast.day_no
+where day=?
+order by distance
+limit 1";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$now, $yoil]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+    return $res[0];
+}
+
+
+function dayForecast($time) //  현재 시간으로터 (아침[1]_[4], 점심[2]_[5], 저녁[3]_[6]) 단위로 14번째 후 까지 보여줌
+{
+    $pdo = pdoSqlConnect();
+
+    $query = "select day_forecast.no,
+       concat(day, '요일') as day,
+       case when HOUR(day_forecast.time) = 0
+            then '아침'
+            when HOUR(day_forecast.time) = 9
+            then '점심'
+            when HOUR(day_forecast.time) = 17
+            then '저녁'
+        end as time,
+       case when day_forecast.current_status_grade = 1
+           then '좋음'
+           when day_forecast.current_status_grade = 2
+           then '보통'
+           when day_forecast.current_status_grade = 3
+           then '나쁨'
+           else '매우나쁨'
+        end as current_grade
+from days
+right outer join (select day_forecast.no, day_no,time, current_status_grade from day_forecast) day_forecast
+    on days.no = day_forecast.day_no
+where day_forecast.no = ?;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$time]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 

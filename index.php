@@ -35,6 +35,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/japanMeteorologicalAgency', ['IndexController', 'japanMeteorologicalAgency']);    //  일본기상청 영상 조회 API
 
     $r->addRoute('GET', '/hourForecast', ['IndexController', 'hourForecast']);  //  시간별 예보 조회 API
+    $r->addRoute('GET', '/dayForecast', ['IndexController', 'dayForecast']);    //  일별 예보 조회 API
 
 });
 

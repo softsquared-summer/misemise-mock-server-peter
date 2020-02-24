@@ -706,16 +706,58 @@ try {
                     $res->result[] = hourForecast($j);
                 }
             } else {
-                for($i=$now+2; $i<$end_time; $i++){
+                for($i=$now+2; $i<=$end_time; $i++){
                     $res->result[] = hourForecast($i);
                 }
             }
             $res->isSuccess = TRUE;
             $res->code = 100;
-            $res->message = "테스트 성공";
+            $res->message = "시간별 예보 조회 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
-            
+
+        /*
+                 * API No. 14
+                 * API Name : 일별 예보 조회 API
+                 * 마지막 수정 날짜 : 20.02.25
+        */
+        case "dayForecast":
+            http_response_code(200);
+            date_default_timezone_set('Asia/Seoul');
+
+            $timestamp = strtotime("Now");
+            $now = date("H", $timestamp);
+            $day = date("Y-m-d", $timestamp);
+
+            $yoils = array('일','월','화','수','목','금','토');
+            $yoil = $yoils[date('w', strtotime($day))];
+
+            $tmp->result = timeDistance($now, $yoil);
+            $tmp_encode = json_encode($tmp->result);
+            $tmp_decode = json_decode($tmp_encode);
+            $row_no = $tmp_decode->no;
+            $end_row = $row_no+14;
+            $max_size = 21;
+            if($end_row > $max_size){   //  일요일 저녁 넘어가면 월요일 아침으로
+                $re_row_no = $end_row-$max_size;
+
+                for($i=$row_no; $i<=$max_size; $i++){
+                    $res->result[] = dayForecast($i);
+                }
+                for($j=1; $j<$re_row_no; $j++){
+                    $res->result[] = dayForecast($j);
+                }
+            } else {
+                for($i=$row_no; $i<$end_row; $i++){
+                    $res->result[] = dayForecast($i);
+                }
+            }
+
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "일별 예보 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
             
     }
 
