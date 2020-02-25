@@ -1,0 +1,42 @@
+!#/etc/php/7.0/fpm -q
+
+<?php
+include "/var/www/html/api-server/pdos/DatabasePdo.php";
+include "/var/www/html/api-server/pdos/IndexPdo.php";
+// UPDATE
+
+$pdo = pdoSqlConnect();
+
+$all_station = map();
+$map_encode = json_encode($all_station);
+$map_decode = json_decode($map_encode);
+
+for($i=0; $i<count($map_decode); $i++){
+//for($i=0; $i<10; $i++){
+    $j = $i+1;
+    $tm_x = $map_decode[$i]->tm_x;
+    $tm_y = $map_decode[$i]->tm_y;
+    $stationName = $map_decode[$i]->station_name;
+
+    $tmp = fineDust_map($stationName);
+    $json_result = json_decode($tmp);
+
+    $pm10_value = MapValue($json_result, pm10Value);
+    $pm25_value = MapValue($json_result, pm25Value);
+    $pm10_grade = MapValue($json_result, pm10Grade1h);
+    $pm25_grade = MapValue($json_result, pm25Grade1h);
+
+    if(($pm10_grade) < ($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
+        $current_grade = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+    } else {
+        $current_grade = $pm10_grade;
+    }
+
+    $query = "update map_status set pm10_value=$pm10_value, pm25_value=$pm25_value, current_grade=$current_grade where no = ?;";
+    $st = $pdo->prepare($query);
+    $st->execute([$j]);
+}
+
+
+
+?>
