@@ -234,8 +234,8 @@ try {
                 $tmp->result = fineDust($stationName);
                 $json_result = json_decode($tmp->result);
 
-                (int)$pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
-                (int)$pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
+                $pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+                $pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
                 $res->result->total_grade = StationGrade($json_result,  $station_result, khaiGrade);
                 $res->result->pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
                 $res->result->pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
@@ -245,9 +245,9 @@ try {
                 $res->result->so2_grade = StationGrade($json_result,  $station_result, so2Grade);
 
                 if((int)($pm10_grade) < (int)($pm25_grade)){     //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                    $res->result->current_status_grade = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                    $res->result->current_status_grade = pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
                 } else {
-                    $res->result->current_status_grade = (int)$pm10_grade;
+                    $res->result->current_status_grade = pm10_grade;
                 }
 
                 $res->isSuccess = TRUE;
@@ -274,8 +274,8 @@ try {
                 $tmp->result = fineDust($stationName);
                 $json_result = json_decode($tmp->result);
 
-                (int)$pm10_grade = StationGrade($json_result, $station_result, pm10Grade1h);
-                (int)$pm25_grade = StationGrade($json_result, $station_result, pm25Grade1h);
+                $pm10_grade = StationGrade($json_result, $station_result, pm10Grade1h);
+                $pm25_grade = StationGrade($json_result, $station_result, pm25Grade1h);
                 $res->result->total_grade = StationGrade($json_result, $station_result, khaiGrade);
                 $res->result->pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
                 $res->result->pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
@@ -285,9 +285,9 @@ try {
                 $res->result->so2_grade = StationGrade($json_result,  $station_result, so2Grade);
 
                 if((int)($pm10_grade) < (int)($pm25_grade)){     //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                    $res->result->current_status_grade = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                    $res->result->current_status_grade = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
                 } else {
-                    $res->result->current_status_grade = (int)$pm10_grade;
+                    $res->result->current_status_grade = $pm10_grade;
                 }
 
 
@@ -427,13 +427,13 @@ try {
                 $tmp->result = fineDust($stationName);
                 $json_result = json_decode($tmp->result);
 
-                (int)$pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
-                (int)$pm25_grade = StationGrade($json_result, $station_result, pm25Grade1h);
+                $pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+                $pm25_grade = StationGrade($json_result, $station_result, pm25Grade1h);
 
                 if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                    $res->result[0]["current_status_grade"] = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                    $res->result[0]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
                 } else {
-                    $res->result[0]["current_status_grade"] = (int)$pm10_grade;
+                    $res->result[0]["current_status_grade"] = $pm10_grade;
                 }
 
 
@@ -464,13 +464,13 @@ try {
                     $tmp->result = fineDust($stationName);
                     $json_result = json_decode($tmp->result);
 
-                    (int)$pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
-                    (int)$pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
+                    $pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+                    $pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
 
                     if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                        $res->result[$i]["current_status_grade"] = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                        $res->result[$i]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
                     } else {
-                        $res->result[$i]["current_status_grade"] = (int)$pm10_grade;
+                        $res->result[$i]["current_status_grade"] = $pm10_grade;
                     }
                 }
             } else {
@@ -501,13 +501,13 @@ try {
                     $tmp->result = fineDust($stationName);
                     $json_result = json_decode($tmp->result);
 
-                    (int)$pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
-                    (int)$pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
+                    $pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+                    $pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
 
                     if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                        $res->result[$i]["current_status_grade"] = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                        $res->result[$i]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
                     } else {
-                        $res->result[$i]["current_status_grade"] = (int)$pm10_grade;
+                        $res->result[$i]["current_status_grade"] = $pm10_grade;
                     }
                 }
             }
@@ -547,17 +547,17 @@ try {
 
                 $pm10_value = MapValue($json_result, pm10Value);
                 $pm25_value = MapValue($json_result, pm25Value);
-                (int)$pm10_grade = MapValue($json_result, pm10Grade1h);
-                (int)$pm25_grade = MapValue($json_result, pm25Grade1h);
+                $pm10_grade = MapValue($json_result, pm10Grade1h);
+                $pm25_grade = MapValue($json_result, pm25Grade1h);
 
                 $res->result[$i]["no"] = $map_decode[$i]->no;
                 $res->result[$i]["station_name"] = $map_decode[$i]->station_name;
                 $res->result[$i]["pm10_value"] = MapValue($json_result, pm10Grade1h);
                 $res->result[$i]["pm25_value"] = MapValue($json_result, pm25Grade1h);
                 if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                    $res->result[$i]["current_status_grade"] = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                    $res->result[$i]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
                 } else {
-                    $res->result[$i]["current_status_grade"] = (int)$pm10_grade;
+                    $res->result[$i]["current_status_grade"] = $pm10_grade;
                 }
             }
             $res->isSuccess = TRUE;
@@ -591,17 +591,17 @@ try {
 
             $pm10_value = MapValue($json_result, pm10Value);
             $pm25_value = MapValue($json_result, pm25Value);
-            (int)$pm10_grade = MapValue($json_result, pm10Grade1h);
-            (int)$pm25_grade = MapValue($json_result, pm25Grade1h);
+            $pm10_grade = MapValue($json_result, pm10Grade1h);
+            $pm25_grade = MapValue($json_result, pm25Grade1h);
 
             $res->result["no"] = $map_decode->no;
             $res->result["station_name"] = $stationName;
             $res->result["pm10_value"] = MapValue($json_result, pm10Grade1h);
             $res->result["pm25_value"] = MapValue($json_result, pm25Grade1h);
             if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                $res->result["current_status_grade"] = (int)$pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+                $res->result["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
             } else {
-                $res->result["current_status_grade"] = (int)$pm10_grade;
+                $res->result["current_status_grade"] = $pm10_grade;
             }
 
             $res->isSuccess = TRUE;
