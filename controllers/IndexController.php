@@ -526,40 +526,7 @@ try {
         */
         case "map":
             http_response_code(200);
-            $all_station = map();
-            $map_encode = json_encode($all_station);
-            $map_decode = json_decode($map_encode);
-
-//            for($i=0; $i<count($map_decode); $i++){
-            for($i=0; $i<10; $i++){
-
-                $tm_x = $map_decode[$i]->x;
-                $tm_y = $map_decode[$i]->y;
-                $stationName = $map_decode[$i]->station_name;
-
-                $tmp->result = transFormation($tm_x, $tm_y);
-                $json_result = json_decode($tmp->result);
-                $x = $json_result->documents[0]->x;
-                $y = $json_result->documents[0]->y;
-
-                $tmp->result = fineDust($stationName);
-                $json_result = json_decode($tmp->result);
-
-                $pm10_value = MapValue($json_result, pm10Value);
-                $pm25_value = MapValue($json_result, pm25Value);
-                $pm10_grade = MapValue($json_result, pm10Grade1h);
-                $pm25_grade = MapValue($json_result, pm25Grade1h);
-
-                $res->result[$i]["no"] = $map_decode[$i]->no;
-                $res->result[$i]["station_name"] = $map_decode[$i]->station_name;
-                $res->result[$i]["pm10_value"] = MapValue($json_result, pm10Grade1h);
-                $res->result[$i]["pm25_value"] = MapValue($json_result, pm25Grade1h);
-                if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                    $res->result[$i]["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
-                } else {
-                    $res->result[$i]["current_status_grade"] = $pm10_grade;
-                }
-            }
+            $res->result = allMaps();
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "모든 측정소 정보 조회 성공";
@@ -573,37 +540,7 @@ try {
         */
         case "mapDetail":
             http_response_code(200);
-            $tmp->result = mapDetail($vars["mapNo"]);
-            $map_encode = json_encode($tmp->result);
-            $map_decode = json_decode($map_encode);
-
-            $tm_x = $map_decode->x;
-            $tm_y = $map_decode->y;
-            $stationName = $map_decode->station_name;
-
-            $tmp->result = transFormation($tm_x, $tm_y);
-            $json_result = json_decode($tmp->result);
-            $x = $json_result->documents[0]->x;
-            $y = $json_result->documents[0]->y;
-
-            $tmp->result = fineDust($stationName);
-            $json_result = json_decode($tmp->result);
-
-            $pm10_value = MapValue($json_result, pm10Value);
-            $pm25_value = MapValue($json_result, pm25Value);
-            $pm10_grade = MapValue($json_result, pm10Grade1h);
-            $pm25_grade = MapValue($json_result, pm25Grade1h);
-
-            $res->result["no"] = $map_decode->no;
-            $res->result["station_name"] = $stationName;
-            $res->result["pm10_value"] = MapValue($json_result, pm10Grade1h);
-            $res->result["pm25_value"] = MapValue($json_result, pm25Grade1h);
-            if((int)($pm10_grade) < (int)($pm25_grade)){    //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                $res->result["current_status_grade"] = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
-            } else {
-                $res->result["current_status_grade"] = $pm10_grade;
-            }
-
+            $res->result = mapDetail($vars["mapNo"]);
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "해당 측정소 정보 조회 성공";

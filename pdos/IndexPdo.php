@@ -325,10 +325,11 @@ function map()  //  데이터베이스에서 모든 측정소의 정보를 가�
     $pdo = pdoSqlConnect();
     $query = "Select no,
                     station_name,
-                    x,
-                    y
+                    tm_x,
+                    tm_y
             from station;";
     $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
     $st->execute();
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
@@ -342,10 +343,10 @@ function map()  //  데이터베이스에서 모든 측정소의 정보를 가�
 
 function MapValue($json_result, $target)    //  측정소의 미세먼지, 초미세먼지, 등급을 반환
 {
-    $Checking = "점검중";
+    $Checking = 0;
     if (($json_result->list[0]->$target) != '-' && ($json_result->list[0]->$target) != '') {
         return $json_result->list[0]->$target;
-    } else {    //  '-' 또는 ' ' 일 경우 점검중
+    } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
         return $Checking;
     }
 }
@@ -353,12 +354,32 @@ function MapValue($json_result, $target)    //  측정소의 미세먼지, 초�
 function mapDetail($mapNo)
 {
     $pdo = pdoSqlConnect();
-    $query = "Select no,
-                    station_name,
-                    x,
-                    y
-            from station
-            where no = ?;";
+    $query = "select station.no,
+       station.station_name,
+       station.x,
+       station.y,
+       case when map_status.pm10_value = 0
+           then concat('점검중', ' -1μg/m3')
+           else concat(map_status.pm10_value, 'μg/m3')
+        end as pm10_value,
+       case when map_status.pm25_value = 0
+           then concat('점검중', ' -1μg/m3')
+           else concat(map_status.pm25_value, 'μg/m3')
+        end as pm25_value,
+       case when map_status.current_grade = 0
+           then '점검중'
+           when map_status.current_grade = 1
+           then '좋음'
+           when map_status.current_grade = 2
+           then '보통'
+           when map_status.current_grade = 3
+           then '나쁨'
+           else '매우나쁨'
+        end as current_grade
+from station
+left outer join (select map_status.no, pm10_value, pm25_value, current_grade from map_status) as map_status
+on station.no = map_status.no
+where station.no = ?;";
 
     $st = $pdo->prepare($query);
     $st->execute([$mapNo]);
@@ -371,6 +392,73 @@ function mapDetail($mapNo)
 
     return $res[0];
 }
+
+function allMaps()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select station.no,
+       station.station_name,
+       station.x,
+       station.y,
+       case when map_status.pm10_value = 0
+           then concat('점검중', ' -1μg/m3')
+           else concat(map_status.pm10_value, 'μg/m3')
+        end as pm10_value,
+       case when map_status.pm25_value = 0
+           then concat('점검중', ' -1μg/m3')
+           else concat(map_status.pm25_value, 'μg/m3')
+        end as pm25_value,
+       case when map_status.current_grade = 0
+           then '점검중'
+           when map_status.current_grade = 1
+           then '좋음'
+           when map_status.current_grade = 2
+           then '보통'
+           when map_status.current_grade = 3
+           then '나쁨'
+           else '매우나쁨'
+        end as current_grade
+from station
+left outer join (select map_status.no, pm10_value, pm25_value, current_grade from map_status) as map_status
+on station.no = map_status.no;";
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+function fineDust_map($stationName) //  fineDust 와 Key 값이 다르고 map 스케줄러를 위한 함수
+{
+    $api_server = 'http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty';
+    $key = 'bC8E3RFKTwl2QjJFJyYSRAbtQx836O4Xhe6oGxbLEOtifnKm14fx81tkv1Sra5Sgenm4RrRxbjCVjb2yGsbKjA%3D%3D';
+    $term = "month";
+    $ver = "1.3";
+    $type = "&_returnType=json";
+
+    $opts = array(CURLOPT_URL => $api_server."?stationName=".$stationName."&dataTerm=".$term."&ServiceKey=".$key."&ver=".$ver.$type,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPGET => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => 0,
+        CURLOPT_SSLVERSION => true,
+        CURLOPT_HEADER => false);
+
+    $ch = curl_init();
+    curl_setopt_array($ch, $opts);
+
+
+    $response = curl_exec ($ch);
+
+    curl_close ($ch);
+    return $response;
+}
+
 
 function notice()   //  공지사항 반환
 {
