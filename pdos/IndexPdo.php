@@ -24,87 +24,6 @@ function locationSearch($location, $page) // 주소 검색 - KakaoAPI
 
 }
 
-function favoriteGet()  //  즐겨찾기 조회
-{
-    $pdo = pdoSqlConnect();
-    $query = "SELECT no,
-       region_2depth_name,
-       region_3depth_name,
-       tm_x,
-       tm_y
-FROM favorites;";
-
-    $st = $pdo->prepare($query);
-    $st->execute();
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
-
-    $st = null;
-    $pdo = null;
-
-    return $res;
-}
-
-function favoritePost($region_2depth_name, $region_3depth_name, $tm_x, $tm_y)   //  즐겨찾기 추가
-{
-
-    $pdo = pdoSqlConnect();
-    $query = "INSERT into favorites (region_2depth_name, region_3depth_name, tm_x, tm_y)  VALUES (?,?,?,?);";
-    $st = $pdo->prepare($query);
-    $st->execute([$region_2depth_name, $region_3depth_name, $tm_x, $tm_y]);
-
-    setAutoIncrement();
-
-    $st = null;
-    $pdo = null;
-}
-
-function favoriteCnt()  //  즐겨찾기 수 6개 제한을 위한 함수
-{
-    $pdo = pdoSqlConnect();
-    $query = "SELECT count(*) FROM favorites";
-
-    $st = $pdo->prepare($query);
-    $st->execute();
-    return $st->fetchColumn();
-}
-
-function favoriteDelete($favoriteNo)    //  즐겨찾기 삭제
-{
-    $pdo = pdoSqlConnect();
-    $query = "DELETE FROM favorites where no = ?;";
-    $st = $pdo->prepare($query);
-    $st->execute([$favoriteNo]);
-    $count = $st->rowCount();   //  DELETE 에 영향을 받는 rows 개수를 파악
-
-    setAutoIncrement();
-
-    if ($count > 0) {
-        return true;
-    } else {
-        return false;
-    }
-
-    $st = null;
-    $pdo = null;
-}
-
-function setAutoIncrement() // auto_increment 변수 1로 설정 후 favorites 테이블 번호를 새로 부여하고 재정렬
-{
-    $pdo = pdoSqlConnect();
-    $setAutoIncrementQuery1 = "ALTER TABLE favorites AUTO_INCREMENT=1;";
-    $setAutoIncrementQuery2 = "SET @COUNT = 0;";
-    $setAutoIncrementQuery3 = "UPDATE favorites SET no = @COUNT:=@COUNT+1;";
-    $st = $pdo->prepare($setAutoIncrementQuery1);
-    $st->execute();
-    $st = $pdo->prepare($setAutoIncrementQuery2);
-    $st->execute();
-    $st = $pdo->prepare($setAutoIncrementQuery3);
-    $st->execute();
-    $st = $pdo->prepare($setAutoIncrementQuery1);
-    $st->execute();
-}
-
 
 function transFormation($tm_x, $tm_y)   //  좌표계 WGS84 를 TM 으로 변환
 {
@@ -160,6 +79,7 @@ function findNearStation($tm_x, $tm_y)  //  가까운 측정소 3개 검색
     //http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?tmX=210895.593623738&tmY=411629.47873038985&ServiceKey=5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D&_returnType=json
     $api_server = 'http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList';
     $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
+
     $type = "&_returnType=json";
 
     $opts = array(CURLOPT_URL => $api_server."?tmX=".$tm_x."&tmY=".$tm_y."&ServiceKey=".$key.$type,
@@ -183,7 +103,8 @@ function findNearStation($tm_x, $tm_y)  //  가까운 측정소 3개 검색
 function fineDust($stationName) //  측정소 이름으로 검색하여 상세 조회
 {
     $api_server = 'http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty';
-    $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
+//    $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
+    $key = 'bC8E3RFKTwl2QjJFJyYSRAbtQx836O4Xhe6oGxbLEOtifnKm14fx81tkv1Sra5Sgenm4RrRxbjCVjb2yGsbKjA%3D%3D';
     $term = "month";
     $ver = "1.3";
     $type = "&_returnType=json";
@@ -204,28 +125,6 @@ function fineDust($stationName) //  측정소 이름으로 검색하여 상세 �
 
     curl_close ($ch);
     return $response;
-}
-
-function getXY($favoriteNo) //  즐겨찾기 번호의 x, y 좌표 반환
-{
-    $pdo = pdoSqlConnect();
-    $query = "SELECT no,
-       region_2depth_name,
-       region_3depth_name,
-       tm_x,
-       tm_y
-FROM favorites
-where no = ?;";
-    $st = $pdo->prepare($query);
-    //    $st->execute([$param,$param]);
-    $st->execute([$favoriteNo]);
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
-
-    $st = null;
-    $pdo = null;
-
-    return $res[0];
 }
 
 function StationValue($json_result, $station_result, $target){
