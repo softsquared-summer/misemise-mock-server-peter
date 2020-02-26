@@ -37,6 +37,15 @@ for($i=0; $i<count($map_decode); $i++){
     $st->execute([$j]);
 }
 
-
+$cnt = count(fcmToken());
+$tokens = fcmToken();
+$t_encode = json_encode($tokens);
+$t_decode = json_decode($t_encode);
+for($i=0; $i<=cnt; $i++){
+    $to = $t_decode[$i]->token;
+    sendPushMapUpdate($to);
+}
+$st = null;
+$pdo = null;
 
 ?>
