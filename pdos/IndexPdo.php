@@ -103,8 +103,8 @@ function findNearStation($tm_x, $tm_y)  //  가까운 측정소 3개 검색
 function fineDust($stationName) //  측정소 이름으로 검색하여 상세 조회
 {
     $api_server = 'http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty';
-//    $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
-    $key = 'bC8E3RFKTwl2QjJFJyYSRAbtQx836O4Xhe6oGxbLEOtifnKm14fx81tkv1Sra5Sgenm4RrRxbjCVjb2yGsbKjA%3D%3D';
+    $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
+//    $key = 'bC8E3RFKTwl2QjJFJyYSRAbtQx836O4Xhe6oGxbLEOtifnKm14fx81tkv1Sra5Sgenm4RrRxbjCVjb2yGsbKjA%3D%3D';
     $term = "month";
     $ver = "1.3";
     $type = "&_returnType=json";
@@ -128,7 +128,7 @@ function fineDust($stationName) //  측정소 이름으로 검색하여 상세 �
 }
 
 function StationValue($json_result, $station_result, $target){
-    $Checking = "점검중";
+    $Checking = 0;
     if(($json_result->list[0]->$target) != '-' && ($json_result->list[0]->$target) != ''){
         return $json_result->list[0]->$target;
     } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
@@ -151,7 +151,7 @@ function StationValue($json_result, $station_result, $target){
 }
 
 function StationGrade($json_result, $station_result, $target){    //  target의 grade 반환
-    $Checking = "점검중";
+    $Checking = 0;
     if(($json_result->list[0]->$target) != ''){
         return $json_result->list[0]->$target;
     } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
@@ -174,7 +174,7 @@ function StationGrade($json_result, $station_result, $target){    //  target의 
 }
 
 function StationName($json_result, $station_result, $target){ //  target의 station name 반환
-    $Checking = "점검중";
+    $Checking = 0;
     if(($json_result->list[0]->$target) != '-'){
         return $station_result->list[0]->stationName;
     } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
@@ -197,7 +197,7 @@ function StationName($json_result, $station_result, $target){ //  target의 stat
 }
 
 function StationMang($json_result, $station_result, $target){ //  target의 station mang name 반환
-    $Checking = "점검중";
+    $Checking = 0;
     if(($json_result->list[0]->$target) != '-' && ($json_result->list[0]->mangName) != ''){
         return $json_result->list[0]->mangName;
     } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
@@ -258,11 +258,11 @@ function mapDetail($mapNo)
        station.x,
        station.y,
        case when map_status.pm10_value = 0
-           then concat('점검중', ' -1μg/m3')
+           then concat('점검중 ', -1, 'μg/m3')
            else concat(map_status.pm10_value, 'μg/m3')
         end as pm10_value,
        case when map_status.pm25_value = 0
-           then concat('점검중', ' -1μg/m3')
+           then concat('점검중 ', -1, 'μg/m3')
            else concat(map_status.pm25_value, 'μg/m3')
         end as pm25_value,
        case when map_status.current_grade = 0
@@ -300,11 +300,11 @@ function allMaps()
        station.x,
        station.y,
        case when map_status.pm10_value = 0
-           then concat('점검중', ' -1μg/m3')
+           then concat('점검중 ', -1, 'μg/m3')
            else concat(map_status.pm10_value, 'μg/m3')
         end as pm10_value,
        case when map_status.pm25_value = 0
-           then concat('점검중', ' -1μg/m3')
+           then concat('점검중 ', -1, 'μg/m3')
            else concat(map_status.pm25_value, 'μg/m3')
         end as pm25_value,
        case when map_status.current_grade = 0
@@ -480,4 +480,46 @@ where day_forecast.no = ?;";
     $st = null;
     $pdo = null;
     return $res[0];
+}
+
+
+function sendPushMapUpdate($to = ''){   //  Fcm Token 을 받아 알림 푸시
+    $apiKey = 'AAAAKX9eur0:APA91bH0ybAgZWKjWxUnzJwFkVmFbRZnwwD1P30EhWzq0cj370-k5NaE80Kz9djoj-QO9aUiWsTp6fIBtGYoZW8PIJ2EuagQftUQI4disHFE4RzXdDZ7pFSY0gbYVVnlEExweqITbd8M';
+
+    $title = "Map Update";
+    $body = "Hello Map Update Seccess!";
+    $notification = array('title' => $title, 'body' => $body, 'sound' => 'default', 'badge' => '1');
+    $arrayToSend = array('to' =>  $to, 'notification' => $notification, 'priority' => 'high');
+
+    $json = json_encode($arrayToSend);
+    $headers = array('Authorization: key='.$apiKey, 'Content-Type: application/json');
+
+    $url = 'https://fcm.googleapis.com/fcm/send';
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST,"POST");
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+    curl_setopt($ch, CURLOPT_HTTPHEADER,$headers);
+    $result = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($result, true);
+
+}
+
+function fcmToken() //  fcm_users 테이블의 모든 token 을 가져옴
+{
+    $pdo = pdoSqlConnect();
+    $query = "select idx, token from fcm_users;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
 }
