@@ -1,4 +1,5 @@
 <?php
+
 /* ******************   MiseMise   ****************** */
 function locationSearch($location, $page) // 주소 검색 - KakaoAPI
 {
@@ -74,12 +75,12 @@ function FindLocation($tm_x, $tm_y) //  x,y 값을 행정구역정보로 변환
     return $response;
 }
 
-function findNearStation($tm_x, $tm_y)  //  가까운 측정소 3개 검색
+function findNearStation($tm_x, $tm_y)
 {
+    //http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?tmX=210895.593623738&tmY=411629.47873038985&ServiceKey=5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D&_returnType=json
     //http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?tmX=210895.593623738&tmY=411629.47873038985&ServiceKey=5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D&_returnType=json
     $api_server = 'http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList';
     $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
-
     $type = "&_returnType=json";
 
     $opts = array(CURLOPT_URL => $api_server."?tmX=".$tm_x."&tmY=".$tm_y."&ServiceKey=".$key.$type,
@@ -100,16 +101,21 @@ function findNearStation($tm_x, $tm_y)  //  가까운 측정소 3개 검색
     return $response;
 }
 
-function fineDust($stationName) //  측정소 이름으로 검색하여 상세 조회
+function findDust($stationName)
 {
+
     $api_server = 'http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty';
-    $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
+//    $key = '5SLS29uFgnvXyqTaiULbagIAgjy82u6Gd%2BZOOumtbOPC7K9JoS%2B4Vg10CR5I%2BA019DHMRccq1x%2B8DnBdMA%2B7bA%3D%3D';
 //    $key = 'bC8E3RFKTwl2QjJFJyYSRAbtQx836O4Xhe6oGxbLEOtifnKm14fx81tkv1Sra5Sgenm4RrRxbjCVjb2yGsbKjA%3D%3D';
-    $term = "month";
+    $key = 'ORVUQ7GgsWjq1R4bPXnKqMIUZCOPTTdaqgDb4eUrQTWxQi3cWpwggNbkEvkswAeb48zv51sFYuk59hUrh0VYOQ%3D%3D';
+
+    $term = "DAILY";
+    $pageNo = 1;
+    $numOfRows = 1;
     $ver = "1.3";
     $type = "&_returnType=json";
 
-    $opts = array(CURLOPT_URL => $api_server."?stationName=".$stationName."&dataTerm=".$term."&ServiceKey=".$key."&ver=".$ver.$type,
+    $opts = array(CURLOPT_URL => $api_server."?stationName=".$stationName."&dataTerm=".$term."&pageNo=".$pageNo."&numOfRows=".$numOfRows."&ServiceKey=".$key."&ver=".$ver.$type,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPGET => true,
         CURLOPT_SSL_VERIFYPEER => false,
@@ -128,20 +134,45 @@ function fineDust($stationName) //  측정소 이름으로 검색하여 상세 �
 }
 
 function StationValue($json_result, $station_result, $target){
-    $Checking = 0;
-    if(($json_result->list[0]->$target) != '-' && ($json_result->list[0]->$target) != ''){
+    $Checking = "0";
+    if(($json_result->list[0]->$target) != "-"){//} || ($json_result->list[0]->$target) != ""){
         return $json_result->list[0]->$target;
     } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
         $nextStationName = $station_result->list[1]->stationName;
-        $nextResult = fineDust($nextStationName);
+        $nextResult = findDust($nextStationName);
         $next_result = json_decode($nextResult);
-        if(($next_result->list[0]->$target) != '-' && ($json_result->list[0]->$target) != ''){
+        if(($next_result->list[0]->$target) != '-'){//} or ($json_result->list[0]->$target) != ''){
             return $next_result->list[0]->$target;
         } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
             $nextStationName = $station_result->list[2]->stationName;
-            $nextResult2 = fineDust($nextStationName);
+            $nextResult2 = findDust($nextStationName);
             $next_result2 = json_decode($nextResult2);
-            if(($next_result2->list[0]->$target) != '-' & ($json_result->list[0]->$target) != ''){
+            if(($next_result2->list[0]->$target) != '-') {//} or ($json_result->list[0]->$target) != ''){
+                return $next_result2->list[0]->$target;
+            } else {
+                return $Checking;
+            }
+        }
+    }
+
+}
+
+function StationGrade($json_result, $station_result, $target){
+    $Checking = "0";
+
+    if(($json_result->list[0]->$target) != ""){//} || ($json_result->list[0]->$target) != ""){
+        return $json_result->list[0]->$target;
+    } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+        $nextStationName = $station_result->list[1]->stationName;
+        $nextResult = findDust($nextStationName);
+        $next_result = json_decode($nextResult);
+        if(($next_result->list[0]->$target) != ''){//} or ($json_result->list[0]->$target) != ''){
+            return $next_result->list[0]->$target;
+        } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
+            $nextStationName = $station_result->list[2]->stationName;
+            $nextResult2 = findDust($nextStationName);
+            $next_result2 = json_decode($nextResult2);
+            if(($next_result2->list[0]->$target) != '') {//} or ($json_result->list[0]->$target) != ''){
                 return $next_result2->list[0]->$target;
             } else {
                 return $Checking;
@@ -150,42 +181,19 @@ function StationValue($json_result, $station_result, $target){
     }
 }
 
-function StationGrade($json_result, $station_result, $target){    //  target의 grade 반환
-    $Checking = 0;
-    if(($json_result->list[0]->$target) != ''){
-        return $json_result->list[0]->$target;
-    } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
-        $nextStationName = $station_result->list[1]->stationName;
-        $nextResult = fineDust($nextStationName);
-        $next_result = json_decode($nextResult);
-        if(($next_result->list[0]->$target) != ''){
-            return $next_result->list[0]->$target;
-        } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
-            $nextStationName = $station_result->list[2]->stationName;
-            $nextResult2 = fineDust($nextStationName);
-            $next_result2 = json_decode($nextResult2);
-            if(($next_result2->list[0]->$target) != ''){
-                return $next_result2->list[0]->$target;
-            } else {
-                return $Checking;
-            }
-        }
-    }
-}
-
-function StationName($json_result, $station_result, $target){ //  target의 station name 반환
-    $Checking = 0;
+function StationName($json_result, $station_result, $target){
+    $Checking = "0";
     if(($json_result->list[0]->$target) != '-'){
         return $station_result->list[0]->stationName;
     } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
         $nextStationName = $station_result->list[1]->stationName;
-        $nextResult = fineDust($nextStationName);
+        $nextResult = findDust($nextStationName);
         $next_result = json_decode($nextResult);
         if(($next_result->list[0]->$target) != '-'){
             return $station_result->list[1]->stationName;
         } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
             $nextStationName = $station_result->list[2]->stationName;
-            $nextResult2 = fineDust($nextStationName);
+            $nextResult2 = findDust($nextStationName);
             $next_result2 = json_decode($nextResult2);
             if(($next_result2->list[0]->$target) != '-'){
                 return $station_result->list[2]->stationName;
@@ -196,21 +204,21 @@ function StationName($json_result, $station_result, $target){ //  target의 stat
     }
 }
 
-function StationMang($json_result, $station_result, $target){ //  target의 station mang name 반환
-    $Checking = 0;
-    if(($json_result->list[0]->$target) != '-' && ($json_result->list[0]->mangName) != ''){
+function StationMang($json_result, $station_result, $target){
+    $Checking = "0";
+    if(($json_result->list[0]->$target) != '-'){//} || ($json_result->list[0]->mangName) != ''){
         return $json_result->list[0]->mangName;
     } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
         $nextStationName = $station_result->list[1]->stationName;
-        $nextResult = fineDust($nextStationName);
+        $nextResult = findDust($nextStationName);
         $next_result = json_decode($nextResult);
-        if(($next_result->list[0]->$target) != '-' && ($next_result->list[0]->mangName) != ''){
+        if(($next_result->list[0]->$target) != '-'){//} || ($next_result->list[0]->mangName) != ''){
             return $next_result->list[0]->mangName;
         } else {    //  '-' 일 경우 다음으로 가까운 측정소에서 탐색
             $nextStationName = $station_result->list[2]->stationName;
-            $nextResult2 = fineDust($nextStationName);
+            $nextResult2 = findDust($nextStationName);
             $next_result2 = json_decode($nextResult2);
-            if(($next_result2->list[0]->$target) != '-' && ($next_result2->list[0]->mangName) != ''){
+            if(($next_result2->list[0]->$target) != '-'){//} || ($next_result2->list[0]->mangName) != ''){
                 return $next_result2->list[0]->mangName;
             } else {
                 return $Checking;
@@ -270,10 +278,10 @@ function mapDetail($mapNo)
            when map_status.current_grade = 1
            then '좋음'
            when map_status.current_grade = 2
-           then '보통'
+           then '양호'
            when map_status.current_grade = 3
-           then '나쁨'
-           else '매우나쁨'
+           then '보통'
+           else '나쁨'
         end as current_grade
 from station
 left outer join (select map_status.no, pm10_value, pm25_value, current_grade from map_status) as map_status
@@ -312,10 +320,10 @@ function allMaps()
            when map_status.current_grade = 1
            then '좋음'
            when map_status.current_grade = 2
-           then '보통'
+           then '양호'
            when map_status.current_grade = 3
-           then '나쁨'
-           else '매우나쁨'
+           then '보통'
+           else '나쁨'
         end as current_grade
 from station
 left outer join (select map_status.no, pm10_value, pm25_value, current_grade from map_status) as map_status
@@ -398,10 +406,10 @@ function hourForecast($hourNo)  //  현재시간 +12 시간까지의 정보 반�
        case when current_grade = 1
            then '좋음'
            when current_grade = 2
-           then '보통'
+           then '양호'
            when current_grade = 3
-           then '나쁨'
-           else '매우나쁨'
+           then '보통'
+           else '나쁨'
            end as current_grade
 from hour_forecast
 where no = $hourNo;";
@@ -461,10 +469,10 @@ function dayForecast($time) //  현재 시간으로터 (아침[1]_[4], 점심[2]
        case when day_forecast.current_status_grade = 1
            then '좋음'
            when day_forecast.current_status_grade = 2
-           then '보통'
+           then '양호'
            when day_forecast.current_status_grade = 3
-           then '나쁨'
-           else '매우나쁨'
+           then '보통'
+           else '나쁨'
         end as current_grade
 from days
 right outer join (select day_forecast.no, day_no,time, current_status_grade from day_forecast) day_forecast
@@ -522,4 +530,19 @@ function fcmToken() //  fcm_users 테이블의 모든 token 을 가져옴
     $pdo = null;
 
     return $res;
+}
+
+function grade_to_string($target){
+    //1=좋음, 2=보통, 3=나쁨, 4=매우나쁨
+    if($target == 1){
+        return "좋음";
+    } else if($target == 2){
+        return "보통";
+    } else if($target == 3){
+        return "나쁨";
+    } else if($target == 4){
+        return "매우나쁨";
+    } else{
+        return "점검중";
+    }
 }

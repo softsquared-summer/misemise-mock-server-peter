@@ -31,12 +31,10 @@ try {
         */
         case "locationSearch":
             http_response_code(200);
-
             $location = $_GET["location"];
             $pageNo = $_GET["pageNo"];
-
             if(!empty($location)){  //  검색어를 입력한 경우
-                $tmp->result = locationSearch($location);
+                $tmp->result = locationSearch($location, $pageNo);
                 $json_result = json_decode($tmp->result);
                 $total_page = $json_result->meta->total_count;
                 $documents = $json_result->documents;
@@ -79,7 +77,24 @@ try {
                 $res->code = 200;
                 $res->message = "검색어를 입력하지 않았습니다. 검색어를 입력해주세요.";
             }
-
+//                $res->result[0]->no = "1";
+//                $res->result[0]->region_1depth_name = "경기";
+//                $res->result[0]->region_2depth_name = "화성시";
+//                $res->result[0]->region_3depth_name = "동탄1동";
+//                $res->result[0]->address_name = "경기 화성시 동탄1동";
+//                $res->result[0]->tm_x = "127.0719158955";
+//                $res->result[0]->tm_y = "37.206522874281";
+//
+//                $res->result[1]->no = "2";
+//                $res->result[1]->region_1depth_name = "경기";
+//                $res->result[1]->region_2depth_name = "화성시";
+//                $res->result[1]->region_3depth_name = "동탄2동";
+//                $res->result[1]->address_name = "경기 화성시 동탄2동";
+//                $res->result[1]->tm_x = "127.0719158955";
+//                $res->result[1]->tm_y = "37.206522874281";
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "읍/면/동 주소 검색 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK| JSON_UNESCAPED_UNICODE);
             break;
 
@@ -89,76 +104,130 @@ try {
                  * 마지막 수정 날짜 : 20.02.20
         */
         case "dustValue":
-            if($_GET["region"]){    //  즐겨찾기 해당 동네 이름 받기
-                $region = $_GET["region"];
-                $tmp_region = preg_split('/\s+/', $region);
-                $region_2depth_name = $tmp_region[0];
-                $region_3depth_name = $tmp_region[1];
-
-                $tmp_region = locationSearch($region);
-                $json_result = json_decode($tmp_region);
-                $tm_x = $json_result->documents[0]->x;
-                $tm_y = $json_result->documents[0]->y;
-
-                $tmp->result = transFormation($tm_x, $tm_y);
-                $json_result = json_decode($tmp->result);
-
-                $x = $json_result->documents[0]->x;
-                $y = $json_result->documents[0]->y;
-
-                $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
-                $station_result = json_decode($tmp->result);
-
-                $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
-
-                $tmp->result = fineDust($stationName);
-                $json_result = json_decode($tmp->result);
-
-                $res->result->total_value = StationValue($json_result,  $station_result, khaiValue);
-                $res->result->pm10_value = StationValue($json_result,  $station_result, pm10Value);
-                $res->result->pm25_value = StationValue($json_result,  $station_result, pm25Value);
-                $res->result->no2_value = StationValue($json_result, $station_result, no2Value);
-                $res->result->o3_value = StationValue($json_result,  $station_result, o3Value);
-                $res->result->co_value = StationValue($json_result,  $station_result, coValue);
-                $res->result->so2_value = StationValue($json_result,  $station_result, so2Value);
-
+            if(isset($_GET["region"])){    //  즐겨찾기 해당 동네 이름 받기
+//                $region = $_GET["region"];
+//
+//
+//                $tmp_region = locationSearch($region);
+//                $json_result = json_decode($tmp_region);
+//                $tm_x = $json_result->documents[0]->x;
+//                $tm_y = $json_result->documents[0]->y;
+//
+////                $res->result = $json_result;
+////                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+////                return;
+//
+//                $tmp->result = transFormation($tm_x, $tm_y);
+//                $json_result = json_decode($tmp->result);
+//
+//                $x = $json_result->documents[0]->x;
+//                $y = $json_result->documents[0]->y;
+//
+//                $accessLogs->addInfo(json_encode("value log 1 = ".$x." ".$y, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+////                $res->result = $x.$y;
+////                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+////                return;
+//                if($x === NULL and $y === NULL){
+//                    $res->result = "주소를 정확히 입력해주세요.";
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 200;
+//                    $res->message = "측정 값 조회 실패";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                    break;
+//                }
+//                $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
+//                $station_result = json_decode($tmp->result);
+//
+//                $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
+//                $accessLogs->addInfo(json_encode("value log 2 = ".$stationName, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//
+//                $tmp->result = findDust($stationName);
+//                $json_result = json_decode($tmp->result);
+//
+//////                $res->result = $json_result;
+//////                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//////                return;
+//
+//
+//                $res->result->total_value = StationValue($json_result,  $station_result, khaiValue);
+//                $res->result->pm10_value = StationValue($json_result,  $station_result, pm10Value);
+//                $res->result->pm25_value = StationValue($json_result,  $station_result, pm25Value);
+//                $res->result->no2_value = StationValue($json_result, $station_result, no2Value);
+//                $res->result->o3_value = StationValue($json_result,  $station_result, o3Value);
+//                $res->result->co_value = StationValue($json_result,  $station_result, coValue);
+//                $res->result->so2_value = StationValue($json_result,  $station_result, so2Value);
+                $res->result->total_value = "2";
+                $res->result->pm10_value = "23";
+                $res->result->pm25_value = "16";
+                $res->result->no2_value = "0.022";
+                $res->result->o3_value = "0.03";
+                $res->result->co_value = "0.3";
+                $res->result->so2_value = "0.2";
 
                 $res->isSuccess = TRUE;
                 $res->code = 100;
                 $res->message = "측정 값 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
                 break;
-            } else if ($_GET["x"] && $_GET["y"]){    //  GPS의 x, y 값을 받을 경우
-                $tm_x = $_GET["x"];
-                $tm_y = $_GET["y"];
-
-                $tmp->result = transFormation($tm_x, $tm_y);
-                $json_result = json_decode($tmp->result);
-
-                $x = $json_result->documents[0]->x;
-                $y = $json_result->documents[0]->y;
-
-                $tmp->result = findNearStation($x, $y);
-                $station_result = json_decode($tmp->result);
-
-                $stationName = $station_result->list[0]->stationName;
-
-                $tmp->result = fineDust($stationName);
-                $json_result = json_decode($tmp->result);
-
-                $res->result->total_value = StationValue($json_result,  $station_result, khaiValue);
-                $res->result->pm10_value = StationValue($json_result,  $station_result, pm10Value);
-                $res->result->pm25_value = StationValue($json_result,  $station_result, pm25Value);
-                $res->result->no2_value = StationValue($json_result, $station_result, no2Value);
-                $res->result->o3_value = StationValue($json_result,  $station_result, o3Value);
-                $res->result->co_value = StationValue($json_result,  $station_result, coValue);
-                $res->result->so2_value = StationValue($json_result,  $station_result, so2Value);
-
+            } else if (isset($_GET["x"]) && isset($_GET["y"])){    //  GPS의 x, y 값을 받을 경우
+//                $tm_x = $_GET["x"];
+//                $tm_y = $_GET["y"];
+//
+//                $tmp->result = transFormation($tm_x, $tm_y);
+//                $json_result = json_decode($tmp->result);
+//
+//                $x = $json_result->documents[0]->x;
+//                $y = $json_result->documents[0]->y;
+//
+//                if($x === NULL and $y === NULL){
+//                    $res->result = "주소를 정확히 입력해주세요.";
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 200;
+//                    $res->message = "측정 값 조회 실패";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                    break;
+//                }
+//
+//                $tmp->result = findNearStation($x, $y);
+//                $station_result = json_decode($tmp->result);
+//
+//
+//                $stationName = $station_result->list[0]->stationName;
+//
+//                $tmp->result = findDust($stationName);
+//                $json_result = json_decode($tmp->result);
+//
+//                $res->result->total_value = StationValue($json_result,  $station_result, khaiValue);
+//                $res->result->pm10_value = StationValue($json_result,  $station_result, pm10Value);
+//                $res->result->pm25_value = StationValue($json_result,  $station_result, pm25Value);
+//                $res->result->no2_value = StationValue($json_result, $station_result, no2Value);
+//                $res->result->o3_value = StationValue($json_result,  $station_result, o3Value);
+//                $res->result->co_value = StationValue($json_result,  $station_result, coValue);
+//                $res->result->so2_value = StationValue($json_result,  $station_result, so2Value);
+//
+//
+//                $res->isSuccess = TRUE;
+//                $res->code = 100;
+//                $res->message = "측정 값 조회 성공";
+//                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                break;
+                $res->result->total_value = "1";
+                $res->result->pm10_value = "13";
+                $res->result->pm25_value = "26";
+                $res->result->no2_value = "0.011";
+                $res->result->o3_value = "0.08";
+                $res->result->co_value = "0.5";
+                $res->result->so2_value = "0.1";
 
                 $res->isSuccess = TRUE;
                 $res->code = 100;
                 $res->message = "측정 값 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+                break;
+            } else {
+                $res->isSuccess = false;
+                $res->code = 200;
+                $res->message = "측정 등급 조회 실패";
                 break;
             }
 
@@ -168,92 +237,143 @@ try {
                  * 마지막 수정 날짜 : 20.02.19
         */
         case "dustGrade":
-            if($_GET["region"]){    //  즐겨찾기 해당 동네 이름 받기
+            if(isset($_GET["region"])){    //  즐겨찾기 해당 동네 이름 받기
                 $region = $_GET["region"];
-                $tmp_region = preg_split('/\s+/', $region);
-                $region_2depth_name = $tmp_region[0];
-                $region_3depth_name = $tmp_region[1];
+//
+//                $tmp_region = locationSearch($region);
+//                $json_result = json_decode($tmp_region);
+//                $tm_x = $json_result->documents[0]->x;
+//                $tm_y = $json_result->documents[0]->y;
+//
+//                $tmp->result = transFormation($tm_x, $tm_y);
+//                $json_result = json_decode($tmp->result);
+//
+//                $x = $json_result->documents[0]->x;
+//                $y = $json_result->documents[0]->y;
+//
+//                if($x === NULL and $y === NULL){
+//                    $res->result = "주소를 정확히 입력해주세요.";
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 200;
+//                    $res->message = "측정 값 조회 실패";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                    break;
+//                }
+//
+//                $accessLogs->addInfo(json_encode("value log 1 = ".$x." ".$y, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//                $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
+//                $station_result = json_decode($tmp->result);
+//
+//                $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
+//                $accessLogs->addInfo(json_encode("value log 2 = ".$stationName, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//                $tmp->result = findDust($stationName);
+//                $json_result = json_decode($tmp->result);
+//
+//                $pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+//                $pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
+//                $res->result->total_grade = StationGrade($json_result,  $station_result, khaiGrade);
+//                $res->result->pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+//                $res->result->pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
+//                $res->result->no2_grade = StationGrade($json_result,  $station_result, no2Grade);
+//                $res->result->o3_grade = StationGrade($json_result,  $station_result, o3Grade);
+//                $res->result->co_grade = StationGrade($json_result,  $station_result, coGrade);
+//                $res->result->so2_grade = StationGrade($json_result,  $station_result, so2Grade);
+//
+//                if(($pm10_grade) < ($pm25_grade)){     //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
+//                    $res->result->current_status_grade = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+//                } else {
+//                    $res->result->current_status_grade = $pm10_grade;
+//                }
+//
+//                $res->isSuccess = TRUE;
+//                $res->code = 100;
+//                $res->message = "측정 등급 조회 성공";
+//                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                break;
+                $res->result->total_grade = "2";
+                $res->result->pm10_grade = "1";
+                $res->result->pm25_grade = "1";
+                $res->result->no2_grade = "1";
+                $res->result->o3_grade = "2";
+                $res->result->co_grade = "1";
+                $res->result->so2_grade = "1";
+                $res->result->current_status_grade = "1";
 
-                $tmp_region = locationSearch($region);
-                $json_result = json_decode($tmp_region);
-                $tm_x = $json_result->documents[0]->x;
-                $tm_y = $json_result->documents[0]->y;
-
-                $tmp->result = transFormation($tm_x, $tm_y);
-                $json_result = json_decode($tmp->result);
-
-                $x = $json_result->documents[0]->x;
-                $y = $json_result->documents[0]->y;
-
-                $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
-                $station_result = json_decode($tmp->result);
-
-                $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
-
-                $tmp->result = fineDust($stationName);
-                $json_result = json_decode($tmp->result);
-
-                $pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
-                $pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
-                $res->result->total_grade = StationGrade($json_result,  $station_result, khaiGrade);
-                $res->result->pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
-                $res->result->pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
-                $res->result->no2_grade = StationGrade($json_result,  $station_result, no2Grade);
-                $res->result->o3_grade = StationGrade($json_result,  $station_result, o3Grade);
-                $res->result->co_grade = StationGrade($json_result,  $station_result, coGrade);
-                $res->result->so2_grade = StationGrade($json_result,  $station_result, so2Grade);
-
-                if((int)($pm10_grade) < (int)($pm25_grade)){     //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                    $res->result->current_status_grade = pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
-                } else {
-                    $res->result->current_status_grade = pm10_grade;
-                }
 
                 $res->isSuccess = TRUE;
                 $res->code = 100;
                 $res->message = "측정 등급 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
                 break;
-            } else if ($_GET["x"] && $_GET["y"]) {    //  GPS의 x, y 값을 받을 경우
-                $tm_x = $_GET["x"];
-                $tm_y = $_GET["y"];
+            } else if (isset($_GET["x"]) && isset($_GET["y"])) {    //  GPS의 x, y 값을 받을 경우
+//                $tm_x = $_GET["x"];
+//                $tm_y = $_GET["y"];
+//
+//                $tmp->result = transFormation($tm_x, $tm_y);
+//                $json_result = json_decode($tmp->result);
+//
+//                $x = $json_result->documents[0]->x;
+//                $y = $json_result->documents[0]->y;
+//                if($x === NULL and $y === NULL){
+//                    $res->result = "주소를 정확히 입력해주세요.";
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 200;
+//                    $res->message = "측정 값 조회 실패";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                    break;
+//                }
+//
+//
+//                $tmp->result = findNearStation($x, $y);
+//                $station_result = json_decode($tmp->result);
+//
+//                $stationName = $station_result->list[0]->stationName;
+//
+//                $tmp->result = findDust($stationName);
+//                $json_result = json_decode($tmp->result);
+//
+//                $pm10_grade = StationGrade($json_result, $station_result, pm10Grade1h);
+//                $pm25_grade = StationGrade($json_result, $station_result, pm25Grade1h);
+//                $res->result->total_grade = StationGrade($json_result, $station_result, khaiGrade);
+//                $res->result->pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
+//                $res->result->pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
+//                $res->result->no2_grade = StationGrade($json_result,  $station_result, no2Grade);
+//                $res->result->o3_grade = StationGrade($json_result,  $station_result, o3Grade);
+//                $res->result->co_grade = StationGrade($json_result,  $station_result, coGrade);
+//                $res->result->so2_grade = StationGrade($json_result,  $station_result, so2Grade);
+//
+//                if(($pm10_grade) < ($pm25_grade)){     //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
+//                    $res->result->current_status_grade = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
+//                } else {
+//                    $res->result->current_status_grade = $pm10_grade;
+//                }
+//
+//
+//                $res->isSuccess = TRUE;
+//                $res->code = 100;
+//                $res->message = "측정 등급 조회 성공";
+//                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                break;
 
-                $tmp->result = transFormation($tm_x, $tm_y);
-                $json_result = json_decode($tmp->result);
-
-                $x = $json_result->documents[0]->x;
-                $y = $json_result->documents[0]->y;
-
-
-                $tmp->result = findNearStation($x, $y);
-                $station_result = json_decode($tmp->result);
-
-                $stationName = $station_result->list[0]->stationName;
-
-                $tmp->result = fineDust($stationName);
-                $json_result = json_decode($tmp->result);
-
-                $pm10_grade = StationGrade($json_result, $station_result, pm10Grade1h);
-                $pm25_grade = StationGrade($json_result, $station_result, pm25Grade1h);
-                $res->result->total_grade = StationGrade($json_result, $station_result, khaiGrade);
-                $res->result->pm10_grade = StationGrade($json_result,  $station_result, pm10Grade1h);
-                $res->result->pm25_grade = StationGrade($json_result,  $station_result, pm25Grade1h);
-                $res->result->no2_grade = StationGrade($json_result,  $station_result, no2Grade);
-                $res->result->o3_grade = StationGrade($json_result,  $station_result, o3Grade);
-                $res->result->co_grade = StationGrade($json_result,  $station_result, coGrade);
-                $res->result->so2_grade = StationGrade($json_result,  $station_result, so2Grade);
-
-                if((int)($pm10_grade) < (int)($pm25_grade)){     //  미세먼지와 초미세먼지 등급 중에 큰 것이 선택
-                    $res->result->current_status_grade = $pm25_grade;  //  grade 수가 적은 것이 공기 상태가 더 좋은 것
-                } else {
-                    $res->result->current_status_grade = $pm10_grade;
-                }
+                $res->result->total_grade = "1";
+                $res->result->pm10_grade = "2";
+                $res->result->pm25_grade = "3";
+                $res->result->no2_grade = "4";
+                $res->result->o3_grade = "1";
+                $res->result->co_grade = "2";
+                $res->result->so2_grade = "3";
+                $res->result->current_status_grade = "2";
 
 
                 $res->isSuccess = TRUE;
                 $res->code = 100;
                 $res->message = "측정 등급 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+                break;
+            } else {
+                $res->isSuccess = false;
+                $res->code = 200;
+                $res->message = "측정 등급 조회 실패";
                 break;
             }
 
@@ -263,99 +383,164 @@ try {
                  * 마지막 수정 날짜 : 20.02.19
         */
         case "dustEtc":
-            if($_GET["region"]){    //  즐겨찾기 해당 동네 이름 받기
-                $region = $_GET["region"];
-                $tmp_region = preg_split('/\s+/', $region);
-                $region_2depth_name = $tmp_region[0];
-                $region_3depth_name = $tmp_region[1];
-
-                $tmp_region = locationSearch($region);
-                $json_result = json_decode($tmp_region);
-                $tm_x = $json_result->documents[0]->x;
-                $tm_y = $json_result->documents[0]->y;
-
-                $tmp->result = transFormation($tm_x, $tm_y);
-                $json_result = json_decode($tmp->result);
-
-                $x = $json_result->documents[0]->x;
-                $y = $json_result->documents[0]->y;
-
-                $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
-                $station_result = json_decode($tmp->result);
-
-                $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
-
-                $tmp->result = fineDust($stationName);
-                $json_result = json_decode($tmp->result);
-
-                $res->result->region_2depth_name = $region_2depth_name;
-                $res->result->region_3depth_name = $region_3depth_name;
-
-                $now = time();
-                $five_minutes = 60 * 5;
-                $offset = $now % $five_minutes;
-                $five_block = $now - $offset;
-                $res->result->current_time = date("Y-m-d H:i", $five_block); //  현재시간, 5분마다 최신화
-
-                $res->result->update_time = $json_result->list[0]->dataTime;
-                $res->result->pm10_mang_name = StationMang($json_result,  $station_result, pm10Value);
-                $res->result->pm25_mang_name = StationMang($json_result,  $station_result, pm25Value);
-                $res->result->pm10_station = StationName($json_result,  $station_result, pm10Value);
-                $res->result->pm25_station = StationName($json_result, $station_result, pm25Value);
-                $res->result->no2_station = StationName($json_result,  $station_result, no2Value);
-                $res->result->o3_station = StationName($json_result,  $station_result, o3Value);
-                $res->result->co_station = StationName($json_result,  $station_result, coValue);
-                $res->result->so2_station = StationName($json_result,  $station_result, so2Value);
+            if(isset($_GET["region"])){    //  즐겨찾기 해당 동네 이름 받기
+//                $region = $_GET["region"];
+//                $tmp_region = preg_split('/\s+/', $region);
+//                $region_len = count($tmp_region)-1;
+//                $region_2depth_name = $tmp_region[$region_len-1];
+//                $region_3depth_name = $tmp_region[$region_len];
+//
+//                $tmp_region = locationSearch($region);
+//                $json_result = json_decode($tmp_region);
+//                $tm_x = $json_result->documents[0]->x;
+//                $tm_y = $json_result->documents[0]->y;
+//
+//                $tmp->result = transFormation($tm_x, $tm_y);
+//                $json_result = json_decode($tmp->result);
+//
+//                $x = $json_result->documents[0]->x;
+//                $y = $json_result->documents[0]->y;
+//                if($x === NULL and $y === NULL){
+//                    $res->result = "주소를 정확히 입력해주세요.";
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 200;
+//                    $res->message = "측정 값 조회 실패";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                    break;
+//                }
+//                $tmp->result = findNearStation($x, $y); //  가까운 측정소 검색
+//                $station_result = json_decode($tmp->result);
+//
+//                $stationName = $station_result->list[0]->stationName;   //  처음 시작은 가장 가까운 측정소로 시작
+//
+//                $tmp->result = findDust($stationName);
+//                $json_result = json_decode($tmp->result);
+//
+//                $res->result->region_2depth_name = $region_2depth_name;
+//                if($region_3depth_name === NULL){
+//                    $res->result->region_3depth_name = '';
+//                } else {
+//                    $res->result->region_3depth_name = $region_3depth_name;
+//                }
+//
+//
+//                $now = time();
+//                $five_minutes = 60 * 5;
+//                $offset = $now % $five_minutes;
+//                $five_block = $now - $offset;
+//                $res->result->current_time = date("Y-m-d H:i", $five_block); //  현재시간, 5분마다 최신화
+//
+//                $res->result->update_time = $json_result->list[0]->dataTime;
+//                $res->result->pm10_mang_name = StationMang($json_result,  $station_result, pm10Value);
+//                $res->result->pm25_mang_name = StationMang($json_result,  $station_result, pm25Value);
+//                $res->result->pm10_station = StationName($json_result,  $station_result, pm10Value);
+//                $res->result->pm25_station = StationName($json_result, $station_result, pm25Value);
+//                $res->result->no2_station = StationName($json_result,  $station_result, no2Value);
+//                $res->result->o3_station = StationName($json_result,  $station_result, o3Value);
+//                $res->result->co_station = StationName($json_result,  $station_result, coValue);
+//                $res->result->so2_station = StationName($json_result,  $station_result, so2Value);
+//
+//                $res->isSuccess = TRUE;
+//                $res->code = 100;
+//                $res->message = "기타 사항 조회 성공";
+//                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                break;
+                $res->result->region_2depth_name = "화성시";
+                $res->result->region_3depth_name = "동탄1동";
+                $res->result->current_time = "2020-02-27 17:25";
+                $res->result->update_time = "2020-02-27 13:00";
+                $res->result->pm10_mang_name = "도시대기";
+                $res->result->pm25_mang_name = "도시대기";
+                $res->result->pm10_station = "청계동";
+                $res->result->pm25_station = "청계동";
+                $res->result->no2_station = "청계동";
+                $res->result->o3_station = "청계동";
+                $res->result->co_station = "청계동";
+                $res->result->so2_station = "청계동";
 
                 $res->isSuccess = TRUE;
                 $res->code = 100;
                 $res->message = "기타 사항 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
                 break;
-            } else if ($_GET["x"] && $_GET["y"]) {    //  GPS의 x, y 값을 받을 경우
-                $tm_x = $_GET["x"];
-                $tm_y = $_GET["y"];
-
-                $tmp->result = transFormation($tm_x, $tm_y);
-                $json_result = json_decode($tmp->result);
-
-                $x = $json_result->documents[0]->x;
-                $y = $json_result->documents[0]->y;
-
-                $tmp->result = FindLocation($tm_x, $tm_y);
-                $location_result = json_decode($tmp->result);
-
-                $tmp->result = findNearStation($x, $y);
-                $station_result = json_decode($tmp->result);
-
-                $stationName = $station_result->list[0]->stationName;
-
-                $tmp->result = fineDust($stationName);
-                $json_result = json_decode($tmp->result);
-
-                $res->result->region_2depth_name = $location_result->documents[0]->region_2depth_name;
-                $res->result->region_3depth_name = $location_result->documents[0]->region_3depth_name;
-
-                $now = time();
-                $five_minutes = 60*5;
-                $offset = $now % $five_minutes;
-                $five_block = $now - $offset;
-                $res->result->current_time = date("Y-m-d H:i", $five_block); //  현재시간, 5분마다 최신화
-
-                $res->result->update_time = $json_result->list[0]->dataTime;
-                $res->result->pm10_mang_name = StationMang($json_result,  $station_result, pm10Value);
-                $res->result->pm25_mang_name = StationMang($json_result,  $station_result, pm25Value);
-                $res->result->pm10_station = StationName($json_result,  $station_result, pm10Value);
-                $res->result->pm25_station = StationName($json_result,  $station_result, pm25Value);
-                $res->result->no2_station = StationName($json_result,  $station_result, no2Value);
-                $res->result->o3_station = StationName($json_result,  $station_result, o3Value);
-                $res->result->co_station = StationName($json_result,  $station_result, coValue);
-                $res->result->so2_station = StationName($json_result, $station_result, so2Value);
-
+            } else if (isset($_GET["x"]) && isset($_GET["y"])) {    //  GPS의 x, y 값을 받을 경우
+//                $tm_x = $_GET["x"];
+//                $tm_y = $_GET["y"];
+//
+//                $tmp->result = transFormation($tm_x, $tm_y);
+//                $json_result = json_decode($tmp->result);
+//
+//                $x = $json_result->documents[0]->x;
+//                $y = $json_result->documents[0]->y;
+//                if($x === NULL and $y === NULL){
+//                    $res->result = "주소를 정확히 입력해주세요.";
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 200;
+//                    $res->message = "측정 값 조회 실패";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                    break;
+//                }
+//                $tmp->result = FindLocation($tm_x, $tm_y);
+//                $location_result = json_decode($tmp->result);
+//
+//                $tmp->result = findNearStation($x, $y);
+//                $station_result = json_decode($tmp->result);
+//
+//                $stationName = $station_result->list[0]->stationName;
+//
+//                $tmp->result = findDust($stationName);
+//                $json_result = json_decode($tmp->result);
+//
+//                $res->result->region_2depth_name = $location_result->documents[0]->region_2depth_name;
+//                if ($location_result->documents[0]->region_3depth_name === NULL){
+//                    $res->result->region_3depth_name = '';
+//                } else {
+//                    $res->result->region_3depth_name = $location_result->documents[0]->region_3depth_name;
+//                }
+//
+//
+//                $now = time();
+//                $five_minutes = 60*5;
+//                $offset = $now % $five_minutes;
+//                $five_block = $now - $offset;
+//                $res->result->current_time = date("Y-m-d H:i", $five_block); //  현재시간, 5분마다 최신화
+//
+//                $res->result->update_time = $json_result->list[0]->dataTime;
+//                $res->result->pm10_mang_name = StationMang($json_result,  $station_result, pm10Value);
+//                $res->result->pm25_mang_name = StationMang($json_result,  $station_result, pm25Value);
+//                $res->result->pm10_station = StationName($json_result,  $station_result, pm10Value);
+//                $res->result->pm25_station = StationName($json_result,  $station_result, pm25Value);
+//                $res->result->no2_station = StationName($json_result,  $station_result, no2Value);
+//                $res->result->o3_station = StationName($json_result,  $station_result, o3Value);
+//                $res->result->co_station = StationName($json_result,  $station_result, coValue);
+//                $res->result->so2_station = StationName($json_result, $station_result, so2Value);
+//
+//                $res->isSuccess = TRUE;
+//                $res->code = 100;
+//                $res->message = "기타 사항 조회 성공";
+//                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+//                break;
+                $res->result->region_2depth_name = "서울시";
+                $res->result->region_3depth_name = "서초구";
+                $res->result->current_time = "2020-02-27 10:20";
+                $res->result->update_time = "2020-02-27 15:00";
+                $res->result->pm10_mang_name = "도시대기";
+                $res->result->pm25_mang_name = "도시대기";
+                $res->result->pm10_station = "서초구";
+                $res->result->pm25_station = "서초구";
+                $res->result->no2_station = "서초구";
+                $res->result->o3_station = "서초구";
+                $res->result->co_station = "서초구";
+                $res->result->so2_station = "서초구";
                 $res->isSuccess = TRUE;
                 $res->code = 100;
                 $res->message = "기타 사항 조회 성공";
                 echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+                break;
+            }else {
+                $res->isSuccess = false;
+                $res->code = 200;
+                $res->message = "측정 등급 조회 실패";
                 break;
             }
 
@@ -434,8 +619,8 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             } else {
-                $res->isSuccess = TRUE;
-                $res->code = 100;
+                $res->isSuccess = false;
+                $res->code = 200;
                 $res->message = "안양대연구소 조회 실패";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
@@ -448,7 +633,6 @@ try {
         */
         case "japanMeteorologicalAgency":   //  반환된 imgUrl 을 가공해서 보여줘야 함
             http_response_code(200);
-
             for($i=24; $i<70; $i+=3){ // 영상이 img 파일로 연속, imgUrl을 반환
                 $res->result[] = 'https://static.tenki.jp/static-images/pm25/'. $i. '/japan-detail/large.jpg';
             }
