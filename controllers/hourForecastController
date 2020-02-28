@@ -2,7 +2,7 @@
 
 <?php
 include "/var/www/html/api-server/pdos/DatabasePdo.php";
-
+include "/var/www/html/api-server/pdos/IndexPdo.php";
 // UPDATE
 $pdo = pdoSqlConnect();
 for($i=1; $i<=24; $i++){
@@ -11,7 +11,15 @@ for($i=1; $i<=24; $i++){
     $st = $pdo->prepare($query);
     $st->execute([]);
 }
-$st = null;
-$pdo = null;
 
+//$cnt = count(fcmToken());
+//$tokens = fcmToken();
+//$t_encode = json_encode($tokens);
+//$t_decode = json_decode($t_encode);
+//for($i=0; $i<=cnt; $i++){
+//    $to = $t_decode[$i]->token;
+//    sendPushMapUpdate($to);
+//}
+//$st = null;
+//$pdo = null;
 ?>
