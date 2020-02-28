@@ -33,6 +33,10 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/hourForecast', ['IndexController', 'hourForecast']);  //  시간별 예보 조회 API
     $r->addRoute('GET', '/dayForecast', ['IndexController', 'dayForecast']);    //  일별 예보 조회 API
 
+    $r->addRoute('GET', '/deeplink', ['IndexController', 'deeplink']);    //  딥 링크 조회 API
+
+    $r->addRoute('GET', '/rtdbGet', ['IndexController', 'rtdbGet']);    //  RTDB 조회 API
+    $r->addRoute('POST', '/rtdbPatch', ['IndexController', 'rtdbPatch']);    //  RTDB 수정 API
 });
 
 // Fetch method and URI from somewhere

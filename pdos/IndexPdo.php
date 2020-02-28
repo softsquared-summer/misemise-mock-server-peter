@@ -546,3 +546,85 @@ function grade_to_string($target){
         return "점검중";
     }
 }
+
+function deeplink()
+{
+    $deeplink = "https://dowellcomputer.page.link/Goto";
+    return $deeplink;
+}
+
+
+function rtdbGet(){
+//    https://fcm-example-8a076.firebaseio.com/notice
+    // Constants
+    $FIREBASE = "https://fcm-example-8a076.firebaseio.com/";
+    $NODE_GET = "notice.json";
+
+// Initialize cURL
+    $curl = curl_init();
+
+// Read
+    curl_setopt( $curl, CURLOPT_URL, $FIREBASE . $NODE_GET );
+
+// Get return value
+    curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+    curl_setopt($curl, CURLOPT_POST, false);
+    curl_setopt ($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+
+
+// Make request
+// Close connection
+    $response = curl_exec( $curl );
+    curl_close( $curl );
+    $response = json_decode( $response );
+// Show result
+    return $response;
+}
+
+function rtdbPatch($title, $content, $version){
+//    https://fcm-example-8a076.firebaseio.com/notice
+    $FIREBASE = "https://fcm-example-8a076.firebaseio.com/";
+    $NODE_PATCH = "notice.json";
+
+    $boolean_result = true;
+    if($version != "") {
+        if ($title == "" and $content != "") {
+            $data = array(
+                "content" => $content,
+                "version" => $version
+            );
+        } else if ($content == "" and $title != "") {
+            $data = array(
+                "title" => $title,
+                "version" => $version
+            );
+        } else {
+            $data = array(
+                "title" => $title,
+                "content" => $content,
+                "version" => $version
+            );
+        }
+    } else {
+        $data = array();
+        $boolean_result = false;
+    }
+
+// JSON encoded
+    $json = json_encode( $data );
+
+// Initialize cURL
+    $curl = curl_init();
+
+// Update
+    curl_setopt( $curl, CURLOPT_URL, $FIREBASE . $NODE_PATCH );
+    curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, "PATCH" );
+    curl_setopt( $curl, CURLOPT_POSTFIELDS, $json );
+
+// Make request
+// Close connection
+    $response = curl_exec( $curl );
+    curl_close( $curl );
+    return $boolean_result;
+}

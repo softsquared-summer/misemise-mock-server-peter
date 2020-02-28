@@ -33,6 +33,7 @@ try {
             http_response_code(200);
             $location = $_GET["location"];
             $pageNo = $_GET["pageNo"];
+//
             if(!empty($location)){  //  검색어를 입력한 경우
                 $tmp->result = locationSearch($location, $pageNo);
                 $json_result = json_decode($tmp->result);
@@ -42,7 +43,7 @@ try {
 
                 if($len != 0) { //  검색 결과 값이 존재할때
                     for ($i = 0; $i < $len; $i++) {
-                        $res->result[$i]["no"] = ($i + 1);
+//                        $res->result[$i]["no"] = ($i + 1);
                         if (($json_result->documents[$i]->address) != null) {
                             $res->result[$i]["region_1depth_name"] = $json_result->documents[$i]->address->region_1depth_name;
                             $res->result[$i]["region_2depth_name"] = $json_result->documents[$i]->address->region_2depth_name;
@@ -77,6 +78,9 @@ try {
                 $res->code = 200;
                 $res->message = "검색어를 입력하지 않았습니다. 검색어를 입력해주세요.";
             }
+
+            echo json_encode($res, JSON_NUMERIC_CHECK| JSON_UNESCAPED_UNICODE);
+            break;
 //                $res->result[0]->no = "1";
 //                $res->result[0]->region_1depth_name = "경기";
 //                $res->result[0]->region_2depth_name = "화성시";
@@ -92,11 +96,11 @@ try {
 //                $res->result[1]->address_name = "경기 화성시 동탄2동";
 //                $res->result[1]->tm_x = "127.0719158955";
 //                $res->result[1]->tm_y = "37.206522874281";
-            $res->isSuccess = TRUE;
-            $res->code = 100;
-            $res->message = "읍/면/동 주소 검색 성공";
-            echo json_encode($res, JSON_NUMERIC_CHECK| JSON_UNESCAPED_UNICODE);
-            break;
+//            $res->isSuccess = TRUE;
+//            $res->code = 100;
+//            $res->message = "읍/면/동 주소 검색 성공";
+//            echo json_encode($res, JSON_NUMERIC_CHECK| JSON_UNESCAPED_UNICODE);
+//            break;
 
         /*
                  * API No. 2
@@ -149,13 +153,54 @@ try {
 //////                return;
 //
 //
+//                $accessLogs->addInfo(json_encode("value log 2 = ".khaiValue, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 //                $res->result->total_value = StationValue($json_result,  $station_result, khaiValue);
+//                if($res->result->total_value === null){
+//                    $res->result->total_value = StationValue2($json_result,  $station_result, khaiValue);
+//                }
+//                $accessLogs->addInfo(json_encode("value log 2 = ".$res->result->total_value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//
+//                $accessLogs->addInfo(json_encode("value log 2 = ".pm10Value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 //                $res->result->pm10_value = StationValue($json_result,  $station_result, pm10Value);
+//                if($res->result->pm10_value === null){
+//                    $res->result->pm10_value = StationValue2($json_result,  $station_result, pm10Value);
+//                }
+//                $accessLogs->addInfo(json_encode("value log 2 = ".$res->result->pm10_value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//
+//                $accessLogs->addInfo(json_encode("value log 2 = ".pm25Value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 //                $res->result->pm25_value = StationValue($json_result,  $station_result, pm25Value);
+//                if($res->result->pm25_value === null){
+//                    $res->result->pm25_value = StationValue2($json_result,  $station_result, pm25Value);
+//                }
+//                $accessLogs->addInfo(json_encode("value log 2 = ".$res->result->pm25_value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//
+//                $accessLogs->addInfo(json_encode("value log 2 = ".no2Value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 //                $res->result->no2_value = StationValue($json_result, $station_result, no2Value);
+//                if($res->result->no2_value === null){
+//                    $res->result->no2_value = StationValue2($json_result,  $station_result, no2Value);
+//                }
+//                $accessLogs->addInfo(json_encode("value log 2 = ". $res->result->no2_value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//
+//                $accessLogs->addInfo(json_encode("value log 2 = ".o3Value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 //                $res->result->o3_value = StationValue($json_result,  $station_result, o3Value);
+//                if($res->result->o3_value === null){
+//                    $res->result->o3_value = StationValue2($json_result,  $station_result, o3Value);
+//                }
+//                $accessLogs->addInfo(json_encode("value log 2 = ".$res->result->o3_value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//
+//                $accessLogs->addInfo(json_encode("value log 2 = ".coValue, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 //                $res->result->co_value = StationValue($json_result,  $station_result, coValue);
+//                if($res->result->co_value === null){
+//                    $res->result->co_value = StationValue2($json_result,  $station_result, coValue);
+//                }
+//                $accessLogs->addInfo(json_encode("value log 2 = ".$res->result->co_value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+//
+//                $accessLogs->addInfo(json_encode("value log 2 = ".so2Value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 //                $res->result->so2_value = StationValue($json_result,  $station_result, so2Value);
+//                if($res->result->so2_value === null){
+//                    $res->result->so2_value = StationValue2($json_result,  $station_result, so2Value);
+//                }
+//                $accessLogs->addInfo(json_encode("value log 2 = ".$res->result->so2_value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
                 $res->result->total_value = "2";
                 $res->result->pm10_value = "23";
                 $res->result->pm25_value = "16";
@@ -719,7 +764,45 @@ try {
             $res->message = "일별 예보 조회 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
-            
+
+        case "deeplink":
+            http_response_code(200);
+            $res->result = deeplink();
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "딥 링크 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        case "rtdbGet":
+            http_response_code(200);
+            $res->result = rtdbGet();
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "rtdb 조회 성공";
+
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        case "rtdbPatch":
+            http_response_code(200);
+            $boolean_result = rtdbPatch($req->title, $req->content, $req->version);
+            if($boolean_result == true){
+                $res->result = "최신화 완료";
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "rtdb 수정 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            } else {
+                $res->result = "버전을 필수로 입력해주세요.";
+                $res->isSuccess = false;
+                $res->code = 200;
+                $res->message = "rtdb 수정 실패";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
     }
 
 
