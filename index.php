@@ -37,6 +37,12 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     $r->addRoute('GET', '/rtdbGet', ['IndexController', 'rtdbGet']);    //  RTDB 조회 API
     $r->addRoute('POST', '/rtdbPatch', ['IndexController', 'rtdbPatch']);    //  RTDB 수정 API
+    
+    $r->addRoute('POST', '/dontLook', ['IndexController', 'dontLook']);    //  다시 보지 않기 API
+
+    $r->addRoute('GET', '/nullSchool', ['IndexController', 'nullSchool']);  //  널스쿨 영상 조회 API
+
+
 });
 
 // Fetch method and URI from somewhere

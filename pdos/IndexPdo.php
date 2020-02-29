@@ -628,3 +628,34 @@ function rtdbPatch($title, $content, $version){
     curl_close( $curl );
     return $boolean_result;
 }
+
+
+function dontLook($isShowNotice){
+//    https://fcm-example-8a076.firebaseio.com/notice
+    $FIREBASE = "https://fcm-example-8a076.firebaseio.com/";
+    $NODE_PATCH = "notice.json";
+
+    $boolean_result = true;
+
+    $data = array(
+        "isShowNotice" => $isShowNotice
+    );
+
+
+// JSON encoded
+    $json = json_encode( $data );
+
+// Initialize cURL
+    $curl = curl_init();
+
+// Update
+    curl_setopt( $curl, CURLOPT_URL, $FIREBASE . $NODE_PATCH );
+    curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, "PATCH" );
+    curl_setopt( $curl, CURLOPT_POSTFIELDS, $json );
+
+// Make request
+// Close connection
+    $response = curl_exec( $curl );
+    curl_close( $curl );
+    return $boolean_result;
+}

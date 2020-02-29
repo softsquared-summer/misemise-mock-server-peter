@@ -68,11 +68,12 @@ try {
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "읍/면/동 주소 검색 성공";
-                } else {    //  검색 결과 값이 존재하지 않을 때
-                    $res->isSuccess = TRUE;
-                    $res->code = 101;
-                    $res->message = "검색된 결과가 없습니다. 검색어를 다시 입력해주세요.";
                 }
+//                else {    //  검색 결과 값이 존재하지 않을 때
+//                    $res->isSuccess = TRUE;
+//                    $res->code = 101;
+//                    $res->message = "검색된 결과가 없습니다. 검색어를 다시 입력해주세요.";
+//                }
             } else {    //  검색어를 입력하지 않은 경우
                 $res->isSuccess = False;
                 $res->code = 200;
@@ -335,7 +336,7 @@ try {
 //                $res->message = "측정 등급 조회 성공";
 //                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
 //                break;
-                $res->result->total_grade = "2";
+                $res->result->total_grade = "1";
                 $res->result->pm10_grade = "1";
                 $res->result->pm25_grade = "1";
                 $res->result->no2_grade = "1";
@@ -400,14 +401,14 @@ try {
 //                echo json_encode($res, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
 //                break;
 
-                $res->result->total_grade = "1";
-                $res->result->pm10_grade = "2";
-                $res->result->pm25_grade = "3";
+                $res->result->total_grade = "4";
+                $res->result->pm10_grade = "4";
+                $res->result->pm25_grade = "4";
                 $res->result->no2_grade = "4";
-                $res->result->o3_grade = "1";
-                $res->result->co_grade = "2";
-                $res->result->so2_grade = "3";
-                $res->result->current_status_grade = "2";
+                $res->result->o3_grade = "4";
+                $res->result->co_grade = "4";
+                $res->result->so2_grade = "4";
+                $res->result->current_status_grade = "4";
 
 
                 $res->isSuccess = TRUE;
@@ -678,7 +679,8 @@ try {
         */
         case "japanMeteorologicalAgency":   //  반환된 imgUrl 을 가공해서 보여줘야 함
             http_response_code(200);
-            for($i=24; $i<70; $i+=3){ // 영상이 img 파일로 연속, imgUrl을 반환
+            for($i=18; $i<=63; $i+=3){ // 영상이 img 파일로 연속, imgUrl을 반환
+//                https://static.tenki.jp/static-images/pm25/18/japan-detail/large.jpg
                 $res->result[] = 'https://static.tenki.jp/static-images/pm25/'. $i. '/japan-detail/large.jpg';
             }
 
@@ -764,7 +766,11 @@ try {
             $res->message = "일별 예보 조회 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
-
+        /*
+                 * API No. 12
+                 * API Name : 딥링크 조회 API
+                 * 마지막 수정 날짜 : 20.02.28
+        */
         case "deeplink":
             http_response_code(200);
             $res->result = deeplink();
@@ -774,6 +780,11 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
+        /*
+                 * API No. 13
+                 * API Name : RTDB 조회 API
+                 * 마지막 수정 날짜 : 20.02.28
+        */
         case "rtdbGet":
             http_response_code(200);
             $res->result = rtdbGet();
@@ -784,6 +795,11 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
+        /*
+                 * API No. 14
+                 * API Name : RTDB 수정 API
+                 * 마지막 수정 날짜 : 20.02.28
+        */
         case "rtdbPatch":
             http_response_code(200);
             $boolean_result = rtdbPatch($req->title, $req->content, $req->version);
@@ -802,6 +818,46 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
+
+        /*
+                 * API No. 15
+                 * API Name : 널스쿨 영상 조회 API
+                 * 마지막 수정 날짜 : 20.02.29
+        */
+        case "nullSchool":
+            http_response_code(200);
+            date_default_timezone_set('Asia/Seoul');
+
+            $timestamp = strtotime("Now");
+            $nowMonth = date("m", $timestamp);  //02
+            $nowDay = date("d", $timestamp);    //29
+            $nowHour = date("H", $timestamp);   //10
+
+            $nullSchoolPm10 = 'https://earth.nullschool.net/ko/#2020/'.$nowMonth. '/'.$nowDay.'/'.$nowHour.'00Z/particulates/surface/level/overlay=pm10/orthographic=-233.60,36.14,2447/loc=127.424,36.939';
+            $nullSchoolPm2_5 = 'https://earth.nullschool.net/ko/#2020/'.$nowMonth. '/'.$nowDay.'/'.$nowHour.'00Z/particulates/surface/level/overlay=pm2.5/orthographic=-233.60,36.14,2447/loc=127.424,36.939';
+
+            $res->result->nullSchoolPm10 = $nullSchoolPm10;
+            $res->result->nullSchoolPm2_5 = $nullSchoolPm2_5;
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "널스쿨 영상 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+        /*
+                         * API No. 16
+                         * API Name : 다시 보지 않기 API
+                         * 마지막 수정 날짜 : 20.02.29
+        */
+        case "dontLook":
+            http_response_code(200);
+
+            $boolean_result = dontLook($req->isShowNotice);
+            $res->result = "최신화 완료";
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "rtdb 수정 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
 
     }
 
